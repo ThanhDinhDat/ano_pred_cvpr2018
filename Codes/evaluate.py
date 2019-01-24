@@ -6,10 +6,12 @@ import pickle
 from sklearn import metrics
 import json
 import socket
+import glob
 
 
 # data folder contain all datasets, such as ped1, ped2, avenue, shanghaitech, etc
-DATA_DIR = '../Data'
+# DATA_DIR = '/media/DATA/VAD_datasets'#'../Data'
+DATA_DIR = '/media/DATA/VAD_datasets'
 # hostname = socket.gethostname()
 # if hostname == 'dl-T8520-G10':  # 119
 #     DATA_DIR = '/home/liuwen/ssd/datasets'
@@ -67,16 +69,22 @@ class GroundTruthLoader(object):
     ENTRANCE = 'enter'
     EXIT = 'exit'
     SHANGHAITECH = 'shanghaitech'
+    TAIWAN_SA = 'taiwan_sa'
+    UCF_CRIMES = 'UCF_Crimes'
+    
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
     TOY_DATA = 'toydata'
     TOY_DATA_LABEL_PATH = os.path.join(DATA_DIR, TOY_DATA, 'toydata.json')
 
+    UCF_CRIMES_LABEL_PATH = os.path.join(DATA_DIR, 'UCF_Crimes/Temporal_Anomaly_Annotation_For_Testing_Videos/Txt_formate/Temporal_Anomaly_Annotation.txt')
+    
     NAME_MAT_MAPPING = {
         AVENUE: os.path.join(DATA_DIR, 'avenue/avenue.mat'),
         PED1: os.path.join(DATA_DIR, 'ped1/ped1.mat'),
         PED2: os.path.join(DATA_DIR, 'ped2/ped2.mat'),
         ENTRANCE: os.path.join(DATA_DIR, 'enter/enter.mat'),
-        EXIT: os.path.join(DATA_DIR, 'exit/exit.mat')
+        EXIT: os.path.join(DATA_DIR, 'exit/exit.mat'),
+        TAIWAN_SA: os.path.join(DATA_DIR, 'taiwan_sa/taiwan_sa.mat')
     }
 
     NAME_FRAMES_MAPPING = {
@@ -84,7 +92,9 @@ class GroundTruthLoader(object):
         PED1: os.path.join(DATA_DIR, 'ped1/testing/frames'),
         PED2: os.path.join(DATA_DIR, 'ped2/testing/frames'),
         ENTRANCE: os.path.join(DATA_DIR, 'enter/testing/frames'),
-        EXIT: os.path.join(DATA_DIR, 'exit/testing/frames')
+        EXIT: os.path.join(DATA_DIR, 'exit/testing/frames'),
+        TAIWAN_SA: os.path.join(DATA_DIR, 'taiwan_sa/testing/frames'),
+        UCF_CRIMES: os.path.join(DATA_DIR, 'UCF_Crimes/frames/testing')
     }
 
     def __init__(self, mapping_json=None):
@@ -114,6 +124,8 @@ class GroundTruthLoader(object):
             gt = self.__load_shanghaitech_gt()
         elif dataset == GroundTruthLoader.TOY_DATA:
             gt = self.__load_toydata_gt()
+        elif dataset == GroundTruthLoader.TAIWAN_SA:
+            gt = self.__load_taiwan_sa()
         else:
             gt = self.__load_ucsd_avenue_subway_gt(dataset)
         return gt
@@ -168,7 +180,38 @@ class GroundTruthLoader(object):
             gt.append(sub_video_gt)
 
         return gt
-
+    
+    @staticmethod
+    def __load_taiwan_sa():
+        '''In taiwan dataset, all anomalies are the last 10 frames, so we done load file. Instead we generate gt directory'''
+        num_videos = len(glob.glob(GroundTruthLoader.NAME_FRAMES_MAPPING['taiwan_sa'] + '/*'))
+        print("Number of testing videos: ", num_videos)
+        gt = []
+        for i in range(num_videos):
+            tmp_gt = np.zeros(100)
+            tmp_gt[-25:] = 1
+            gt.append(tmp_gt)
+        return gt
+    
+    def __load_ucf_anomaly():
+        '''the annotations are saved in a text file'''
+        with open(UCF_CRIMES_LABEL_PATH,'r') as file:
+            gt = []
+            for line in file:
+                data = line[:-1].split('  ')[:-1]
+                video_name = data[0].split('.')[0]
+                num_frames = len(glob.glob(os.path.join(DATA_DIR, GroundTruthLoader.NAME_FRAMES_MAPPING.UCF_CRIMES, video_name) + '/*'))
+                anomaly_type = data[1]
+                label = np.zeros(num_frames)
+                for i in range(int(len(data[2:])/2)):
+                    start = int(data[i*2+2])
+                    end = int(data[i*2+3])
+                    if start == -1:
+                        break
+                    label[start:end] = 1
+                gt.append(label)
+        return gt
+        
     @staticmethod
     def __load_shanghaitech_gt():
         video_path_list = os.listdir(GroundTruthLoader.SHANGHAITECH_LABEL_PATH)

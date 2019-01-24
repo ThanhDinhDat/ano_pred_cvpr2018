@@ -13,3 +13,11 @@ Codes/__pycache__/pix2pix.cpython-36.pyc
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/codeStyleConfig.xml
+.idea/
+.ipynb_checkpoints/
+__pycache__/
+Codes/psnrs/
+Codes/summary/
+Codes/checkpoints/pretrains/
+Codes/checkpoints/taiwan_sa_l_2_alpha_1_lp_1.0_adv_0.05_gdl_1.0_flow_2.0/
+"Future Frame Prediction for Anomaly Detection \342\200\223 A New Baseline"

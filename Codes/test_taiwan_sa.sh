@@ -1,0 +1,1 @@
+python test_taiwan_sa.py -g 0 --dataset taiwan_sa -b 4 -i 1 --num_his 4 --test_folder /media/DATA/VAD_datasets/taiwan_sa/testing/frames --config training_hyper_params/hyper_params.ini --evaluate compute_auc
