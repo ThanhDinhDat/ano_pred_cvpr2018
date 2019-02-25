@@ -37,7 +37,7 @@ print(const)
 
 # define dataset
 with tf.name_scope('dataset'):
-    train_loader = DataLoader(train_folder, resize_height=height, resize_width=width)
+    train_loader = DataLoader(train_folder, resize_height=height, resize_width=width, phase='train')
     train_dataset = train_loader(batch_size=batch_size, time_steps=num_his, num_pred=1)
 
     train_it = train_dataset.make_one_shot_iterator()
@@ -50,7 +50,7 @@ with tf.name_scope('dataset'):
     print('train inputs = {}'.format(train_inputs))
     print('train prediction gt = {}'.format(train_gt))
 
-    test_loader = DataLoader(test_folder, resize_height=height, resize_width=width)
+    test_loader = DataLoader(test_folder, resize_height=height, resize_width=width, phase='test')
     test_dataset = test_loader(batch_size=batch_size, time_steps=num_his, num_pred=1)
     test_it = test_dataset.make_one_shot_iterator()
     test_videos_clips_tensor = test_it.get_next()
