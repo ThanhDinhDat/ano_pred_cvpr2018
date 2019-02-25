@@ -31,7 +31,7 @@ adversarial = (lam_adv != 0)
 
 summary_dir = const.SUMMARY_DIR
 snapshot_dir = const.SNAPSHOT_DIR
-
+per_step = const.PER_STEP
 
 print(const)
 
@@ -210,7 +210,7 @@ with tf.Session(config=config) as sess:
                 summary_writer.add_summary(_summaries, global_step=_step)
                 print('Save summaries...')
 
-            if _step % 1000 == 0:
+            if _step % per_step == 0:
                 save(saver, sess, snapshot_dir, _step)
 
         except tf.errors.OutOfRangeError:

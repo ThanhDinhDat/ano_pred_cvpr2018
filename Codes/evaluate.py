@@ -70,7 +70,7 @@ class GroundTruthLoader(object):
     EXIT = 'exit'
     SHANGHAITECH = 'shanghaitech'
     TAIWAN_SA = 'taiwan_sa'
-    UCF_CRIMES = 'UCF_Crimes'
+    UCF_CRIMES = 'ucf_crimes'
     
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
     TOY_DATA = 'toydata'
@@ -126,6 +126,8 @@ class GroundTruthLoader(object):
             gt = self.__load_toydata_gt()
         elif dataset == GroundTruthLoader.TAIWAN_SA:
             gt = self.__load_taiwan_sa()
+        elif dataset == GroundTruthLoader.UCF_CRIMES:
+            gt = self.__load_ucf_crimes()
         else:
             gt = self.__load_ucsd_avenue_subway_gt(dataset)
         return gt
@@ -193,14 +195,15 @@ class GroundTruthLoader(object):
             gt.append(tmp_gt)
         return gt
     
-    def __load_ucf_anomaly():
+    @staticmethod
+    def __load_ucf_crimes():
         '''the annotations are saved in a text file'''
-        with open(UCF_CRIMES_LABEL_PATH,'r') as file:
+        with open(GroundTruthLoader.UCF_CRIMES_LABEL_PATH,'r') as file:
             gt = []
             for line in file:
                 data = line[:-1].split('  ')[:-1]
                 video_name = data[0].split('.')[0]
-                num_frames = len(glob.glob(os.path.join(DATA_DIR, GroundTruthLoader.NAME_FRAMES_MAPPING.UCF_CRIMES, video_name) + '/*'))
+                num_frames = len(glob.glob(os.path.join(DATA_DIR, GroundTruthLoader.NAME_FRAMES_MAPPING['ucf_crimes'], video_name) + '/*'))
                 anomaly_type = data[1]
                 label = np.zeros(num_frames)
                 for i in range(int(len(data[2:])/2)):

@@ -37,7 +37,7 @@ class DataLoader(object):
     def __call__(self, batch_size, time_steps, num_pred=1):
         video_info_list = list(self.videos.values())
         num_videos = len(video_info_list)
-
+        print(num_videos)
         clip_length = time_steps + num_pred
         resize_height, resize_width = self._resize_height, self._resize_width
 
@@ -60,8 +60,8 @@ class DataLoader(object):
                                                  output_types=tf.float32,
                                                  output_shapes=[resize_height, resize_width, clip_length * 3])
         print('generator dataset, {}'.format(dataset))
-        dataset = dataset.prefetch(buffer_size=1000)
-        dataset = dataset.shuffle(buffer_size=1000).batch(batch_size)
+        dataset = dataset.prefetch(buffer_size=600)
+        dataset = dataset.shuffle(buffer_size=600).batch(batch_size)
         print('epoch dataset, {}'.format(dataset))
 
         return dataset

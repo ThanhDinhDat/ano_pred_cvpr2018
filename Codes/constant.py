@@ -26,6 +26,8 @@ def parser_args():
                         help='set the batch size, default is 4.')
     parser.add_argument('--num_his', type=int, default=4,
                         help='set the time steps, default is 4.')
+    parser.add_argument('--per_step', type=int, default=1000,
+                        help='step intervals when saving checkpoints')
 
     parser.add_argument('-d', '--dataset', type=str, default='',
                         help='the name of dataset.')
@@ -122,7 +124,7 @@ const.GPU = args.gpu
 const.BATCH_SIZE = args.batch
 const.NUM_HIS = args.num_his
 const.ITERATIONS = args.iters
-
+const.PER_STEP = args.per_step
 const.EVALUATE = args.evaluate
 
 # network constants
