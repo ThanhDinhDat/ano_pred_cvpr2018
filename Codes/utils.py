@@ -27,8 +27,9 @@ def np_load_frame(filename, resize_height, resize_width):
 
 
 class DataLoader(object):
-    def __init__(self, video_folder, resize_height=256, resize_width=256):
+    def __init__(self, video_folder, resize_height=256, resize_width=256, phase='train'):
         self.dir = video_folder
+        self.phase = phase
         self.videos = OrderedDict()
         self._resize_height = resize_height
         self._resize_width = resize_width
@@ -80,8 +81,13 @@ class DataLoader(object):
         for video in sorted(videos):
             video_name = video.split('/')[-1]
             self.videos[video_name] = {}
-            self.videos[video_name]['path'] = video
-            self.videos[video_name]['frame'] = glob.glob(os.path.join(video, '*.jpg'))
+            if self.phase = 'train':
+                self.videos[video_name]['path'] = video
+            elif self.phase = 'test':
+                self.videos[video_name]['path'] = os.path.join(video, 'images')
+            else:
+                raise NameError(self.phase)
+            self.videos[video_name]['frame'] = glob.glob(os.path.join(self.videos[video_name]['path'], '*.jpg'))
             self.videos[video_name]['frame'].sort()
             self.videos[video_name]['length'] = len(self.videos[video_name]['frame'])
 

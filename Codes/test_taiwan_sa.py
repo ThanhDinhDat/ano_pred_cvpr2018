@@ -47,7 +47,7 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 with tf.Session(config=config) as sess:
     # dataset
-    data_loader = DataLoader(test_folder, height, width)
+    data_loader = DataLoader(test_folder, height, width, phase='test')
 
     # initialize weights
     sess.run(tf.global_variables_initializer())
