@@ -47,7 +47,12 @@ class DataLoader(object):
                 v_id = (v_id + 1) % num_videos
 
                 video_info = video_info_list[v_id]
-                start = rng.randint(0, video_info['length'] - clip_length)
+                try:
+                    start = rng.randint(0, video_info['length'] - clip_length)
+                except:
+                    print(video_info)
+                    print(clip_length)
+                    raise ValueError()
                 video_clip = []
                 for frame_id in range(start, start + clip_length):
                     video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
