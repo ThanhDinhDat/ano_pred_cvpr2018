@@ -81,9 +81,9 @@ class DataLoader(object):
         for video in sorted(videos):
             video_name = video.split('/')[-1]
             self.videos[video_name] = {}
-            if self.phase = 'train':
+            if self.phase == 'train':
                 self.videos[video_name]['path'] = video
-            elif self.phase = 'test':
+            elif self.phase == 'test':
                 self.videos[video_name]['path'] = os.path.join(video, 'images')
             else:
                 raise NameError(self.phase)
