@@ -62,7 +62,7 @@ with tf.Session(config=config) as sess:
     def inference_func(ckpt, dataset_name, evaluate_name):
         load(loader, sess, ckpt)
         
-        psnr_records = []
+        psnr_records = {}
         videos_info = data_loader.videos
         num_videos = len(videos_info.keys())
         total = 0
@@ -83,7 +83,7 @@ with tf.Session(config=config) as sess:
                     video_name, num_videos, i, length, psnr))
 
             psnrs[0:num_his] = psnrs[num_his]
-            psnr_records.append(psnrs)
+            psnr_records[video_name] = psnrs
 
         result_dict = {'dataset': dataset_name, 'psnr': psnr_records, 'flow': [], 'names': [], 'diff_mask': []}
 

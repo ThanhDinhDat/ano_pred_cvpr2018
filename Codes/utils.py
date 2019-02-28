@@ -77,7 +77,7 @@ class DataLoader(object):
         return self.videos[video_name]
 
     def setup(self):
-        videos = glob.glob(os.path.join(self.dir, '*'))
+        videos = sorted(glob.glob(os.path.join(self.dir, '*')))
         for video in sorted(videos):
             video_name = video.split('/')[-1]
             self.videos[video_name] = {}
