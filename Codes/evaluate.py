@@ -119,7 +119,7 @@ class GroundTruthLoader(object):
                  np.array[0] contains all the start frame and end frame of abnormal events of video 0,
                  and its shape is (#frapsnr, )
         """
-
+        print("Evaluating dataset: ", dataset)
         if dataset == GroundTruthLoader.SHANGHAITECH:
             gt = self.__load_shanghaitech_gt()
         elif dataset == GroundTruthLoader.TOY_DATA:
@@ -186,7 +186,7 @@ class GroundTruthLoader(object):
     @staticmethod
     def __load_taiwan_sa():
         '''In taiwan dataset, all anomalies are the last 10 frames, so we done load file. Instead we generate gt directory'''
-        num_videos = len(glob.glob(GroundTruthLoader.NAME_FRAMES_MAPPING['taiwan_sa'] + '/*'))
+        num_videos = 165 #len(glob.glob(GroundTruthLoader.NAME_FRAMES_MAPPING['taiwan_sa'] + '/*'))
         print("Number of testing videos: ", num_videos)
         gt = []
         for i in range(num_videos):
@@ -394,7 +394,7 @@ def precision_recall_auc(loss_file):
     optimal_results = RecordResult()
     for sub_loss_file in loss_file_list:
         dataset, scores, labels = get_scores_labels(sub_loss_file)
-        precision, recall, thresholds = metrics.precision_recall_curve(labels, scores, pos_label=0)
+        precision, recall, thresholds = metrics.precision_recall_curve(labels, scores, pos_label=1)
         auc = metrics.auc(recall, precision)
 
         results = RecordResult(recall, precision, auc, dataset, sub_loss_file)
@@ -424,7 +424,7 @@ def compute_eer(loss_file):
     optimal_results = RecordResult(auc=np.inf)
     for sub_loss_file in loss_file_list:
         dataset, scores, labels = get_scores_labels(sub_loss_file)
-        fpr, tpr, thresholds = metrics.roc_curve(labels, scores, pos_label=0)
+        fpr, tpr, thresholds = metrics.roc_curve(labels, scores, pos_label=1)
         eer = cal_eer(fpr, tpr)
 
         results = RecordResult(fpr, tpr, eer, dataset, sub_loss_file)
@@ -467,7 +467,7 @@ def compute_auc(loss_file):
             scores = np.concatenate((scores, distance[DECIDABLE_IDX:]), axis=0)
             labels = np.concatenate((labels, gt[i][DECIDABLE_IDX:]), axis=0)
 
-        fpr, tpr, thresholds = metrics.roc_curve(labels, scores, pos_label=0)
+        fpr, tpr, thresholds = metrics.roc_curve(labels, scores, pos_label=1)
         auc = metrics.auc(fpr, tpr)
 
         results = RecordResult(fpr, tpr, auc, dataset, sub_loss_file)
