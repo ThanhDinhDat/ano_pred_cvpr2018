@@ -161,7 +161,7 @@ const.LRATE_D_BOUNDARIES = eval(config.get(const.DATASET, 'LRATE_D_BOUNDARIES'))
 
 
 const.SAVE_DIR = '{dataset}_l_{L_NUM}_alpha_{ALPHA_NUM}_lp_{LAM_LP}_' \
-                 'adv_{LAM_ADV}_gdl_{LAM_GDL}_flow_{LAM_FLOW}'.format(dataset=const.DATASET,
+                 'adv_{LAM_ADV}_gdl_{LAM_GDL}_flow_{LAM_FLOW}'.format(dataset='taiwan_sa',#const.DATASET
                                                                       L_NUM=const.L_NUM,
                                                                       ALPHA_NUM=const.ALPHA_NUM,
                                                                       LAM_LP=const.LAM_LP, LAM_ADV=const.LAM_ADV,

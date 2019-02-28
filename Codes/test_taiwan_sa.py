@@ -68,6 +68,8 @@ with tf.Session(config=config) as sess:
         total = 0
         timestamp = time.time()
 
+        print(videos_info)
+        
         for video_name, video in videos_info.items():
             length = video['length']
             total += length
@@ -78,9 +80,11 @@ with tf.Session(config=config) as sess:
                 psnr = sess.run(test_psnr_error,
                                 feed_dict={test_video_clips_tensor: video_clip[np.newaxis, ...]})
                 psnrs[i] = psnr
-
-                print('video = {} / {}, i = {} / {}, psnr = {:.6f}'.format(
-                    video_name, num_videos, i, length, psnr))
+                
+                # print('video = {} / {}, i = {} / {}, psnr = {:.6f}'.format(
+                #     video_name, num_videos, i, length, psnr))
+            print('video = {} / {}, psnr = {:.6f}'.format(
+                     video_name, num_videos, psnr))
 
             psnrs[0:num_his] = psnrs[num_his]
             psnr_records[video_name] = psnrs
