@@ -193,11 +193,14 @@ class GroundTruthLoader(object):
         '''In taiwan dataset, all anomalies are the last 10 frames, so we done load file. Instead we generate gt directory'''
         num_videos = 165 #len(glob.glob(GroundTruthLoader.NAME_FRAMES_MAPPING['taiwan_sa'] + '/*'))
         print("Number of testing videos: ", num_videos)
-        gt = []
+        gt = {}
+        video_start = 456
         for i in range(num_videos):
             tmp_gt = np.zeros(100)
             tmp_gt[-25:] = 1
-            gt.append(tmp_gt)
+
+            video_name = str(format(video_start,'06'))
+            gt[video_name] = tmp_gt
         return gt
     
     @staticmethod
