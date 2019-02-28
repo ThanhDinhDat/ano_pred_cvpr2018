@@ -201,6 +201,7 @@ class GroundTruthLoader(object):
 
             video_name = str(format(video_start,'06'))
             gt[video_name] = tmp_gt
+            video_start += 1
         return gt
     
     @staticmethod
