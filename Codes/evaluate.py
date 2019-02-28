@@ -70,6 +70,7 @@ class GroundTruthLoader(object):
     EXIT = 'exit'
     SHANGHAITECH = 'shanghaitech'
     TAIWAN_SA = 'taiwan_sa'
+    A3D = 'A3D'
     UCF_CRIMES = 'ucf_crimes'
     
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
@@ -85,6 +86,7 @@ class GroundTruthLoader(object):
         ENTRANCE: os.path.join(DATA_DIR, 'enter/enter.mat'),
         EXIT: os.path.join(DATA_DIR, 'exit/exit.mat'),
         TAIWAN_SA: os.path.join(DATA_DIR, 'taiwan_sa/taiwan_sa.mat')
+        A3D: os.path.join(DATA_DIR, 'A3D/A3D.mat')
     }
 
     NAME_FRAMES_MAPPING = {
@@ -94,6 +96,7 @@ class GroundTruthLoader(object):
         ENTRANCE: os.path.join(DATA_DIR, 'enter/testing/frames'),
         EXIT: os.path.join(DATA_DIR, 'exit/testing/frames'),
         TAIWAN_SA: os.path.join(DATA_DIR, 'taiwan_sa/testing/frames'),
+        A3D: os.path.join('/media/DATA/A3D/frames'),
         UCF_CRIMES: os.path.join(DATA_DIR, 'UCF_Crimes/frames/testing')
     }
 
@@ -189,6 +192,20 @@ class GroundTruthLoader(object):
         num_videos = len(glob.glob(GroundTruthLoader.NAME_FRAMES_MAPPING['taiwan_sa'] + '/*'))
         print("Number of testing videos: ", num_videos)
         gt = []
+        for i in range(num_videos):
+            tmp_gt = np.zeros(100)
+            tmp_gt[-25:] = 1
+            gt.append(tmp_gt)
+        return gt
+    
+    @staticmethod
+    def __load_A3D():
+        '''In A3D dataset,'''
+        num_videos = len(glob.glob(GroundTruthLoader.NAME_FRAMES_MAPPING['A3D'] + '/*'))
+        print("Number of testing videos: ", num_videos)
+        gt = []
+        label_file = '/media/DATA/A3D/A3D_labels.pkl'
+        full_labels = pkl.load(open(label_file, 'rb'))
         for i in range(num_videos):
             tmp_gt = np.zeros(100)
             tmp_gt[-25:] = 1
