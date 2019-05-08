@@ -27,8 +27,9 @@ def np_load_frame(filename, resize_height, resize_width):
 
 
 class DataLoader(object):
-    def __init__(self, video_folder, resize_height=256, resize_width=256):
+    def __init__(self, video_folder, resize_height=256, resize_width=256, phase='train'):
         self.dir = video_folder
+        self.phase = phase
         self.videos = OrderedDict()
         self._resize_height = resize_height
         self._resize_width = resize_width
@@ -37,7 +38,7 @@ class DataLoader(object):
     def __call__(self, batch_size, time_steps, num_pred=1):
         video_info_list = list(self.videos.values())
         num_videos = len(video_info_list)
-
+        print(num_videos)
         clip_length = time_steps + num_pred
         resize_height, resize_width = self._resize_height, self._resize_width
 
@@ -47,7 +48,12 @@ class DataLoader(object):
                 v_id = (v_id + 1) % num_videos
 
                 video_info = video_info_list[v_id]
-                start = rng.randint(0, video_info['length'] - clip_length)
+                try:
+                    start = rng.randint(0, video_info['length'] - clip_length)
+                except:
+                    print(video_info)
+                    print(clip_length)
+                    raise ValueError()
                 video_clip = []
                 for frame_id in range(start, start + clip_length):
                     video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
@@ -60,8 +66,8 @@ class DataLoader(object):
                                                  output_types=tf.float32,
                                                  output_shapes=[resize_height, resize_width, clip_length * 3])
         print('generator dataset, {}'.format(dataset))
-        dataset = dataset.prefetch(buffer_size=1000)
-        dataset = dataset.shuffle(buffer_size=1000).batch(batch_size)
+        dataset = dataset.prefetch(buffer_size=600)
+        dataset = dataset.shuffle(buffer_size=600).batch(batch_size)
         print('epoch dataset, {}'.format(dataset))
 
         return dataset
@@ -71,12 +77,17 @@ class DataLoader(object):
         return self.videos[video_name]
 
     def setup(self):
-        videos = glob.glob(os.path.join(self.dir, '*'))
+        videos = sorted(glob.glob(os.path.join(self.dir, '*')))
         for video in sorted(videos):
             video_name = video.split('/')[-1]
             self.videos[video_name] = {}
-            self.videos[video_name]['path'] = video
-            self.videos[video_name]['frame'] = glob.glob(os.path.join(video, '*.jpg'))
+            if self.phase == 'train':
+                self.videos[video_name]['path'] = video
+            elif self.phase == 'test':
+                self.videos[video_name]['path'] = os.path.join(video, 'images')
+            else:
+                raise NameError(self.phase)
+            self.videos[video_name]['frame'] = glob.glob(os.path.join(self.videos[video_name]['path'], '*.jpg'))
             self.videos[video_name]['frame'].sort()
             self.videos[video_name]['length'] = len(self.videos[video_name]['frame'])
 

@@ -6,10 +6,12 @@ import pickle
 from sklearn import metrics
 import json
 import socket
+import glob
 
 
 # data folder contain all datasets, such as ped1, ped2, avenue, shanghaitech, etc
-DATA_DIR = '../Data'
+# DATA_DIR = '/media/DATA/VAD_datasets'#'../Data'
+DATA_DIR = '/media/DATA/VAD_datasets'
 # hostname = socket.gethostname()
 # if hostname == 'dl-T8520-G10':  # 119
 #     DATA_DIR = '/home/liuwen/ssd/datasets'
@@ -67,16 +69,24 @@ class GroundTruthLoader(object):
     ENTRANCE = 'enter'
     EXIT = 'exit'
     SHANGHAITECH = 'shanghaitech'
+    TAIWAN_SA = 'taiwan_sa'
+    A3D = 'A3D'
+    UCF_CRIMES = 'ucf_crimes'
+    
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
     TOY_DATA = 'toydata'
     TOY_DATA_LABEL_PATH = os.path.join(DATA_DIR, TOY_DATA, 'toydata.json')
 
+    UCF_CRIMES_LABEL_PATH = os.path.join(DATA_DIR, 'UCF_Crimes/Temporal_Anomaly_Annotation_For_Testing_Videos/Txt_formate/Temporal_Anomaly_Annotation.txt')
+    
     NAME_MAT_MAPPING = {
         AVENUE: os.path.join(DATA_DIR, 'avenue/avenue.mat'),
         PED1: os.path.join(DATA_DIR, 'ped1/ped1.mat'),
         PED2: os.path.join(DATA_DIR, 'ped2/ped2.mat'),
         ENTRANCE: os.path.join(DATA_DIR, 'enter/enter.mat'),
-        EXIT: os.path.join(DATA_DIR, 'exit/exit.mat')
+        EXIT: os.path.join(DATA_DIR, 'exit/exit.mat'),
+        TAIWAN_SA: os.path.join(DATA_DIR, 'taiwan_sa/taiwan_sa.mat'),
+        A3D: os.path.join(DATA_DIR, 'A3D/A3D.mat')
     }
 
     NAME_FRAMES_MAPPING = {
@@ -84,7 +94,10 @@ class GroundTruthLoader(object):
         PED1: os.path.join(DATA_DIR, 'ped1/testing/frames'),
         PED2: os.path.join(DATA_DIR, 'ped2/testing/frames'),
         ENTRANCE: os.path.join(DATA_DIR, 'enter/testing/frames'),
-        EXIT: os.path.join(DATA_DIR, 'exit/testing/frames')
+        EXIT: os.path.join(DATA_DIR, 'exit/testing/frames'),
+        TAIWAN_SA: os.path.join(DATA_DIR, 'taiwan_sa/testing/frames'),
+        A3D: os.path.join('/media/DATA/A3D/frames'),
+        UCF_CRIMES: os.path.join(DATA_DIR, 'UCF_Crimes/frames/testing')
     }
 
     def __init__(self, mapping_json=None):
@@ -109,11 +122,17 @@ class GroundTruthLoader(object):
                  np.array[0] contains all the start frame and end frame of abnormal events of video 0,
                  and its shape is (#frapsnr, )
         """
-
+        print("Evaluating dataset: ", dataset)
         if dataset == GroundTruthLoader.SHANGHAITECH:
             gt = self.__load_shanghaitech_gt()
         elif dataset == GroundTruthLoader.TOY_DATA:
             gt = self.__load_toydata_gt()
+        elif dataset == GroundTruthLoader.TAIWAN_SA:
+            gt = self.__load_taiwan_sa()
+        elif dataset == GroundTruthLoader.A3D:
+            gt = self.__load_A3D()
+        elif dataset == GroundTruthLoader.UCF_CRIMES:
+            gt = self.__load_ucf_crimes()
         else:
             gt = self.__load_ucsd_avenue_subway_gt(dataset)
         return gt
@@ -168,7 +187,57 @@ class GroundTruthLoader(object):
             gt.append(sub_video_gt)
 
         return gt
+    
+    @staticmethod
+    def __load_taiwan_sa():
+        '''In taiwan dataset, all anomalies are the last 10 frames, so we done load file. Instead we generate gt directory'''
+        num_videos = 165 #len(glob.glob(GroundTruthLoader.NAME_FRAMES_MAPPING['taiwan_sa'] + '/*'))
+        print("Number of testing videos: ", num_videos)
+        gt = {}
+        video_start = 456
+        for i in range(num_videos):
+            tmp_gt = np.zeros(100)
+            tmp_gt[-25:] = 1
 
+            video_name = str(format(video_start,'06'))
+            gt[video_name] = tmp_gt
+            video_start += 1
+        return gt
+    
+    @staticmethod
+    def __load_A3D():
+        '''In A3D dataset,'''
+        num_videos = len(glob.glob(GroundTruthLoader.NAME_FRAMES_MAPPING['A3D'] + '/*'))
+        print("Number of testing videos: ", num_videos)
+        gt = {}
+        label_file = '/media/DATA/A3D/A3D_labels.pkl'
+        full_labels = pickle.load(open(label_file, 'rb'))
+        for key, value in full_labels.items(): #range(num_videos):
+            video_len = int(value['clip_end']) - int(value['clip_start']) + 1
+            tmp_gt = value['target']
+            gt[key] = tmp_gt
+        return gt
+    
+    @staticmethod
+    def __load_ucf_crimes():
+        '''the annotations are saved in a text file'''
+        with open(GroundTruthLoader.UCF_CRIMES_LABEL_PATH,'r') as file:
+            gt = []
+            for line in file:
+                data = line[:-1].split('  ')[:-1]
+                video_name = data[0].split('.')[0]
+                num_frames = len(glob.glob(os.path.join(DATA_DIR, GroundTruthLoader.NAME_FRAMES_MAPPING['ucf_crimes'], video_name) + '/*'))
+                anomaly_type = data[1]
+                label = np.zeros(num_frames)
+                for i in range(int(len(data[2:])/2)):
+                    start = int(data[i*2+2])
+                    end = int(data[i*2+3])
+                    if start == -1:
+                        break
+                    label[start:end] = 1
+                gt.append(label)
+        return gt
+        
     @staticmethod
     def __load_shanghaitech_gt():
         video_path_list = os.listdir(GroundTruthLoader.SHANGHAITECH_LABEL_PATH)
@@ -348,7 +417,7 @@ def precision_recall_auc(loss_file):
     optimal_results = RecordResult()
     for sub_loss_file in loss_file_list:
         dataset, scores, labels = get_scores_labels(sub_loss_file)
-        precision, recall, thresholds = metrics.precision_recall_curve(labels, scores, pos_label=0)
+        precision, recall, thresholds = metrics.precision_recall_curve(labels, scores, pos_label=1)
         auc = metrics.auc(recall, precision)
 
         results = RecordResult(recall, precision, auc, dataset, sub_loss_file)
@@ -378,7 +447,7 @@ def compute_eer(loss_file):
     optimal_results = RecordResult(auc=np.inf)
     for sub_loss_file in loss_file_list:
         dataset, scores, labels = get_scores_labels(sub_loss_file)
-        fpr, tpr, thresholds = metrics.roc_curve(labels, scores, pos_label=0)
+        fpr, tpr, thresholds = metrics.roc_curve(labels, scores, pos_label=1)
         eer = cal_eer(fpr, tpr)
 
         results = RecordResult(fpr, tpr, eer, dataset, sub_loss_file)
@@ -404,14 +473,15 @@ def compute_auc(loss_file):
         # the name of dataset, loss, and ground truth
         dataset, psnr_records, gt = load_psnr_gt(loss_file=sub_loss_file)
 
+
         # the number of videos
-        num_videos = len(psnr_records)
+        num_videos = len(psnr_records.keys())
 
         scores = np.array([], dtype=np.float32)
         labels = np.array([], dtype=np.int8)
         # video normalization
-        for i in range(num_videos):
-            distance = psnr_records[i]
+        for key, value in psnr_records.items():
+            distance = value#psnr_records['psnr']
 
             if NORMALIZE:
                 distance -= distance.min()  # distances = (distance - min) / (max - min)
@@ -419,9 +489,30 @@ def compute_auc(loss_file):
                 # distance = 1 - distance
 
             scores = np.concatenate((scores, distance[DECIDABLE_IDX:]), axis=0)
-            labels = np.concatenate((labels, gt[i][DECIDABLE_IDX:]), axis=0)
+            labels = np.concatenate((labels, gt[key][DECIDABLE_IDX:]), axis=0)
 
-        fpr, tpr, thresholds = metrics.roc_curve(labels, scores, pos_label=0)
+
+
+
+
+        # # the number of videos
+        # num_videos = len(psnr_records)
+
+        # scores = np.array([], dtype=np.float32)
+        # labels = np.array([], dtype=np.int8)
+        # # video normalization
+        # for i in range(num_videos):
+        #     distance = psnr_records[i]
+
+        #     if NORMALIZE:
+        #         distance -= distance.min()  # distances = (distance - min) / (max - min)
+        #         distance /= distance.max()
+        #         # distance = 1 - distance
+
+        #     scores = np.concatenate((scores, distance[DECIDABLE_IDX:]), axis=0)
+        #     labels = np.concatenate((labels, gt[i][DECIDABLE_IDX:]), axis=0)
+
+        fpr, tpr, thresholds = metrics.roc_curve(labels, scores, pos_label=1)
         auc = metrics.auc(fpr, tpr)
 
         results = RecordResult(fpr, tpr, auc, dataset, sub_loss_file)

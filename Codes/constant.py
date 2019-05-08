@@ -26,8 +26,10 @@ def parser_args():
                         help='set the batch size, default is 4.')
     parser.add_argument('--num_his', type=int, default=4,
                         help='set the time steps, default is 4.')
+    parser.add_argument('--per_step', type=int, default=1000,
+                        help='step intervals when saving checkpoints')
 
-    parser.add_argument('-d', '--dataset', type=str,
+    parser.add_argument('-d', '--dataset', type=str, default='',
                         help='the name of dataset.')
     parser.add_argument('--train_folder', type=str, default='',
                         help='set the training folder path.')
@@ -73,8 +75,44 @@ class Const(object):
         return _str
 
 
+# class fakeArgs():
+#     dataset = 'ped2'
+#     test_folder = '/media/DATA/VAD_datasets/ped2/testing/frames'
+#     snapshot_dir = 'checkpoints/pretrains/ped2' 
+#     gpu = '0'
+
+
+#     iters=1
+#     batch=4
+#     num_his=4
+#     train_folder=''
+#     config='training_hyper_params/hyper_params.ini'           
+#     summary_dir=''
+#     psnr_dir=''
+#     evaluate='compute_auc'
+
+# class fakeArgs():
+#     dataset = 'taiwan_sa'#'ped2'
+#     test_folder = '/media/DATA/VAD_datasets/taiwan_sa/testing/frames' #'/media/DATA/VAD_datasets/ped2/testing/frames'
+#     snapshot_dir = ''#'checkpoints/pretrains/ped2' 
+#     gpu = '0'
+
+
+#     iters=10000
+#     batch=4
+#     num_his=4
+#     train_folder='/media/DATA/VAD_datasets/taiwan_sa/training/frames' #'/media/DATA/VAD_datasets/ped2/training/frames'#''
+#     config='training_hyper_params/hyper_params.ini'           
+#     summary_dir=''
+#     psnr_dir=''
+#     evaluate='compute_auc'
+
 args = parser_args()
 const = Const()
+
+#########################################################
+# args = fakeArgs()
+######################################################
 
 # inputs constants
 const.DATASET = args.dataset
@@ -86,7 +124,7 @@ const.GPU = args.gpu
 const.BATCH_SIZE = args.batch
 const.NUM_HIS = args.num_his
 const.ITERATIONS = args.iters
-
+const.PER_STEP = args.per_step
 const.EVALUATE = args.evaluate
 
 # network constants
@@ -123,7 +161,7 @@ const.LRATE_D_BOUNDARIES = eval(config.get(const.DATASET, 'LRATE_D_BOUNDARIES'))
 
 
 const.SAVE_DIR = '{dataset}_l_{L_NUM}_alpha_{ALPHA_NUM}_lp_{LAM_LP}_' \
-                 'adv_{LAM_ADV}_gdl_{LAM_GDL}_flow_{LAM_FLOW}'.format(dataset=const.DATASET,
+                 'adv_{LAM_ADV}_gdl_{LAM_GDL}_flow_{LAM_FLOW}'.format(dataset='taiwan_sa',#const.DATASET
                                                                       L_NUM=const.L_NUM,
                                                                       ALPHA_NUM=const.ALPHA_NUM,
                                                                       LAM_LP=const.LAM_LP, LAM_ADV=const.LAM_ADV,

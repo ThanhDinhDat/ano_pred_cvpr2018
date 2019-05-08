@@ -1,4 +1,7 @@
-
+*.DS_Store*
+Codes/checkpoints/*
+Codes/show_pred_flow_results.ipynb
+ano_pred_2018_cvpr.pdf
 .idea/webServers.xml
 Codes/__pycache__/unet.cpython-36.pyc
 Codes/__pycache__/pix2pix.cpython-36.pyc
@@ -16,6 +19,10 @@ Codes/__pycache__/*
 .idea/codeStyles/codeStyleConfig.xml
 Data/*
 env/*
-Codes/checkpoints/*
 *.deb
-Codes/psnrs/*
+.idea/
+.ipynb_checkpoints/
+__pycache__/
+Codes/psnrs/
+Codes/summary/
+Codes/checkpoints/pretrains/
