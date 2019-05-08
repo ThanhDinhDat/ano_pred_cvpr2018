@@ -167,6 +167,8 @@ def save(saver, sess, logdir, step):
     saver.save(sess, checkpoint_path, global_step=step)
     print('The checkpoint has been created.')
 
-
-
-
+def set_up_matplotlib():
+    """Set matplotlib up."""
+    import matplotlib
+    # Use a non-interactive backend
+    matplotlib.use('Agg')
