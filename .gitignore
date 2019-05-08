@@ -2,6 +2,7 @@
 .idea/webServers.xml
 Codes/__pycache__/unet.cpython-36.pyc
 Codes/__pycache__/pix2pix.cpython-36.pyc
+Codes/__pycache__/*
 .idea/deployment.xml
 .idea/ano_pred_cvpr2018.iml
 .idea/codeStyles/codeStyleConfig.xml
@@ -13,3 +14,8 @@ Codes/__pycache__/pix2pix.cpython-36.pyc
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/codeStyleConfig.xml
+Data/*
+env/*
+Codes/checkpoints/*
+*.deb
+Codes/psnrs/*
