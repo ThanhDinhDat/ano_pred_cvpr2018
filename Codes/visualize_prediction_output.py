@@ -118,10 +118,8 @@ with tf.Session(config=config) as sess:
             
             ax4.plot(frame_order,distance, label="scores")
             plt.axis([0, length, 0, 1])
-            if i < 10:
-               plt.savefig('../images/{}_0{}.png'.format(video_name,i), dpi=200)
-            else:
-               plt.savefig('../images/{}_{}.png'.format(video_name,i), dpi=200)
+            
+            plt.savefig('../images/{}_00{}.png'.format(video_name,i), dpi=200)
             plt.clf()
             #break
         psnr_records.append(psnrs)
