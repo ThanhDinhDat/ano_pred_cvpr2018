@@ -13,6 +13,53 @@ from utils import DataLoader, load, save, psnr_error, diff_mask
 from constant import const
 import evaluate
 
+def calculate_score(psnrs):
+   scores = np.array([], dtype=np.float32) 
+   distance = psnrs
+   if (distance.max() - distance.min())!=0:
+      distance = (distance - distance.min()) / (distance.max() - distance.min())
+   else:
+      distance = (distance - 0) / (distance.max() - 0)
+   scores = np.concatenate((scores[:], distance[DECIDABLE_IDX:]), axis=0)
+   return scores
+
+def visualize(gt_frames, pred_frames, labels, scores, num_vid):
+   print(scores)
+   labels = gt[num_vid]
+   for i in range(len(frame)):
+      fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
+      plt.show()
+      ax2.imshow((pred_frames[i][0]+1)/2.0)
+      ax1.imshow((gt_frames[i] +1)/ 2.0)
+      img1 = gt_frames[i]
+      img2 = pred_frames[i][0]
+      error_r = np.fabs(np.subtract(img2[:,:,0], img1[:,:,0]))
+      error_g = np.fabs(np.subtract(img2[:,:,1], img1[:,:,1]))
+      error_b = np.fabs(np.subtract(img2[:,:,2], img1[:,:,2]))
+      lum_img = np.maximum(np.maximum(error_r, error_g), error_b)
+      # Uncomment the next line to turn the colors upside-down
+      #lum_img = np.negative(lum_img);
+      ax3.imshow(lum_img)
+
+      #compute scores
+      temp_psnrs = psnrs
+      #temp_psnrs[0:num_his] = temp_psnrs[num_his]
+      #frame_order[0:num_his] = frame_order[num_his]
+      distance = temp_psnrs
+      if (distance.max() - distance.min())!=0:
+         distance = (distance - distance.min()) / (distance.max() - distance.min())
+      else:
+         distance = (distance - 0) / (distance.max() - 0)
+         #scores = np.concatenate((scores, distance[DECIDABLE_IDX:]), axis=0)
+         #scores[i]=distance[DECIDABLE_IDX:]
+
+      ax4.plot(frame_order,scores, label="scores")
+      #ax4.plot(frame_order,distance, label="scores")
+      ax4.axis([0, length, 0, 1])
+
+      plt.savefig('../images/{}_{}.png'.format(video_name,'%04d'%(i)), dpi=200)
+      plt.clf()
+
 
 slim = tf.contrib.slim
 
@@ -113,50 +160,5 @@ with tf.Session(config=config) as sess:
                   num_vid = num_vid)
         break
 
-def calculate_score(psnrs):
-   scores = np.array([], dtype=np.float32) 
-   distance = psnrs
-   if (distance.max() - distance.min())!=0:
-      distance = (distance - distance.min()) / (distance.max() - distance.min())
-   else:
-      distance = (distance - 0) / (distance.max() - 0)
-   scores = np.concatenate((scores[:], distance[DECIDABLE_IDX:]), axis=0)
-   return scores
 
-def visualize(gt_frames, pred_frames, labels, scores, num_vid):
-   print(scores)
-   labels = gt[num_vid]
-   for i in range(len(frame)):
-      fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
-      plt.show()
-      ax2.imshow((pred_frames[i][0]+1)/2.0)
-      ax1.imshow((gt_frames[i] +1)/ 2.0)
-      img1 = gt_frames[i]
-      img2 = pred_frames[i][0]
-      error_r = np.fabs(np.subtract(img2[:,:,0], img1[:,:,0]))
-      error_g = np.fabs(np.subtract(img2[:,:,1], img1[:,:,1]))
-      error_b = np.fabs(np.subtract(img2[:,:,2], img1[:,:,2]))
-      lum_img = np.maximum(np.maximum(error_r, error_g), error_b)
-      # Uncomment the next line to turn the colors upside-down
-      #lum_img = np.negative(lum_img);
-      ax3.imshow(lum_img)
-
-      #compute scores
-      temp_psnrs = psnrs
-      #temp_psnrs[0:num_his] = temp_psnrs[num_his]
-      #frame_order[0:num_his] = frame_order[num_his]
-      distance = temp_psnrs
-      if (distance.max() - distance.min())!=0:
-         distance = (distance - distance.min()) / (distance.max() - distance.min())
-      else:
-         distance = (distance - 0) / (distance.max() - 0)
-         #scores = np.concatenate((scores, distance[DECIDABLE_IDX:]), axis=0)
-         #scores[i]=distance[DECIDABLE_IDX:]
-
-      ax4.plot(frame_order,scores, label="scores")
-      #ax4.plot(frame_order,distance, label="scores")
-      ax4.axis([0, length, 0, 1])
-
-      plt.savefig('../images/{}_{}.png'.format(video_name,'%04d'%(i)), dpi=200)
-      plt.clf()
 
