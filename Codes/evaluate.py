@@ -11,7 +11,7 @@ import glob
 
 # data folder contain all datasets, such as ped1, ped2, avenue, shanghaitech, etc
 # DATA_DIR = '/media/DATA/VAD_datasets'#'../Data'
-DATA_DIR = '/media/DATA/VAD_datasets'
+DATA_DIR = '/home/datthanh/future_frame/Data/'
 # hostname = socket.gethostname()
 # if hostname == 'dl-T8520-G10':  # 119
 #     DATA_DIR = '/home/liuwen/ssd/datasets'
@@ -72,11 +72,12 @@ class GroundTruthLoader(object):
     TAIWAN_SA = 'taiwan_sa'
     A3D = 'A3D'
     UCF_CRIMES = 'ucf_crimes'
-    
+    AI_CITY = 'ai_city'
+    AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'train-anomaly-result.txt')
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
     TOY_DATA = 'toydata'
     TOY_DATA_LABEL_PATH = os.path.join(DATA_DIR, TOY_DATA, 'toydata.json')
-
+   
     UCF_CRIMES_LABEL_PATH = os.path.join(DATA_DIR, 'UCF_Crimes/Temporal_Anomaly_Annotation_For_Testing_Videos/Txt_formate/Temporal_Anomaly_Annotation.txt')
     
     NAME_MAT_MAPPING = {
@@ -97,7 +98,8 @@ class GroundTruthLoader(object):
         EXIT: os.path.join(DATA_DIR, 'exit/testing/frames'),
         TAIWAN_SA: os.path.join(DATA_DIR, 'taiwan_sa/testing/frames'),
         A3D: os.path.join('/media/DATA/A3D/frames'),
-        UCF_CRIMES: os.path.join(DATA_DIR, 'UCF_Crimes/frames/testing')
+        UCF_CRIMES: os.path.join(DATA_DIR, 'UCF_Crimes/frames/testing'),
+        AI_CITY: os.path.join(DATA_DIR, AI_CITY, 'testing/frames/')
     }
 
     def __init__(self, mapping_json=None):
@@ -133,9 +135,40 @@ class GroundTruthLoader(object):
             gt = self.__load_A3D()
         elif dataset == GroundTruthLoader.UCF_CRIMES:
             gt = self.__load_ucf_crimes()
+        elif dataset == GroundTruthLoader.AI_CITY:
+            gt = self.__load_ai_city()
         else:
             gt = self.__load_ucsd_avenue_subway_gt(dataset)
         return gt
+
+    def __load_ai_city():
+        anomaly_dict = {}
+        with open(GroundTruthLoader.AI_CITY_LABEL_PATH, 'r') as file:
+             for line in file:
+                 data = line.split()
+                 video_id = data[0]
+                 sub_anomaly = [data[1], data[2]]
+                 if video_id not in anomaly_dict:
+                    anomaly_dict[video_id] = []
+                 anomaly_dict[video_id].append(sub_anomaly)
+
+        dataset_video_folder = GroundTruthLoader.NAME_FRAMES_MAPPING[dataset]
+        video_list = os.listdir(dataset_video_folder)
+        video_list.sort()
+
+        assert len(anomaly_dict) == len(video_list), 'ground true does not match the number of testing videos. {} != {}' \
+            .format(len(anomaly_dict), len(video_list))
+        gt = []
+        length = 500 # each video has 500 frames
+        for video in anomaly_dict:
+            sub_video_gt = np.zeros((length,), dtype=np.int8)
+            for anomaly in anomaly_dict[video]:
+                start = anomaly[0] -1
+                end = anomaly[1] -1 if anomaly[1] -1 < 500 else 499
+                if start < 500:
+                   sub_video_gt[start: end] = 1
+            gt.append(sub_video_gt)
+        return gt        
 
     def __load_ucsd_avenue_subway_gt(self, dataset):
         assert dataset in self.mapping, 'there is no dataset named {} \n Please check {}' \
@@ -600,6 +633,11 @@ def calculate_score(loss_file):
     print('mean normal scores = {}, mean abnormal scores = {}, '
           'delta = {}'.format(mean_normal_scores, mean_abnormal_scores, mean_normal_scores - mean_abnormal_scores))
 
+def get_gt(dataset):
+    # load the ground truth
+    gt_loader = GroundTruthLoader()
+    gt = gt_loader(dataset=dataset)
+    return gt
 
 def test_func(*args):
     # simulate testing on CUHK AVENUE dataset

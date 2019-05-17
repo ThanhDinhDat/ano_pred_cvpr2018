@@ -60,7 +60,9 @@ with tf.Session(config=config) as sess:
     # initialize weights
     sess.run(tf.global_variables_initializer())
     print('Init global successfully!')
-
+    gt_loader = evaluate.GroundTruthLoader()
+    print(gt_loader.NAME_MAT_MAPPING)
+    gt = evaluate.get_gt(dataset=dataset_name)
     # tf saver
     saver = tf.train.Saver(var_list=tf.global_variables(), max_to_keep=None)
 
@@ -72,56 +74,89 @@ with tf.Session(config=config) as sess:
     total = 0
     psnr_records = []
     DECIDABLE_IDX = 4
+    num_vid = -1
     for video_name, video in videos_info.items():
+        #video_name = '91.mp4'
+        #video = videos_info[video_name]
+        num_vid = num_vid + 1
         length = video['length']
         total += length
+        
         frame_order = np.array([], dtype=np.float32)
+        gt_frames = []
+        pred_frames = []
+        diff_frames = []
         #psnrs = np.empty(shape=(length,), dtype=np.float32)
-        psnrs = np.array([], dtype=np.float32)
+        psnrs = np.empty(shape=(length,), dtype=np.float32)
         labels = np.array([], dtype=np.int8)
+        scores = np.array([], dtype=np.float32)
         for i in range(num_his, length):
             video_clip = data_loader.get_video_clips(video_name, i - num_his, i + 1) # video clip size is (W,H,(4+1)*3)
             psnr, pred_frame, diff = sess.run([test_psnr_error, test_outputs, diff_mask_tensor],
                                               feed_dict={test_video_clips_tensor: video_clip[np.newaxis, ...]})
-            
-            psnrs = np.concatenate((psnrs,[psnr]), axis=0)
+            psnrs[i] = psnr
+            #psnrs = np.concatenate((psnrs,[psnr]), axis=0)
             frame_order = np.concatenate((frame_order, [i]),axis=0)
             
             print('video = {} / {}, i = {} / {}'.format(
                     video_name, num_videos, i, length,))
             gt_frame = video_clip[:,:,-3:]
-            fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
-            plt.show()
-            ax2.imshow((pred_frame[0]+1)/2.0)
-            ax1.imshow((gt_frame +1)/ 2.0)
-            img1 = gt_frame
-            img2 = pred_frame[0]
-            error_r = np.fabs(np.subtract(img2[:,:,0], img1[:,:,0]))
-            error_g = np.fabs(np.subtract(img2[:,:,1], img1[:,:,1]))
-            error_b = np.fabs(np.subtract(img2[:,:,2], img1[:,:,2]))
-            lum_img = np.maximum(np.maximum(error_r, error_g), error_b)
-            # Uncomment the next line to turn the colors upside-down
-            #lum_img = np.negative(lum_img);
-            ax3.imshow(lum_img)
-            
-            #compute scores
-            temp_psnrs = psnrs
-            #temp_psnrs[0:num_his] = temp_psnrs[num_his]
-            #frame_order[0:num_his] = frame_order[num_his]
-            distance = temp_psnrs
-            if (distance.max() - distance.min())!=0:
-               distance = (distance - distance.min()) / (distance.max() - distance.min())
-            else:
-               distance = (distance - 0) / (distance.max() - 0)
-            #scores = np.concatenate((scores, distance[DECIDABLE_IDX:]), axis=0)
-            #scores[i]=distance[DECIDABLE_IDX:]
-            
-            ax4.plot(frame_order,distance, label="scores")
-            plt.axis([0, length, 0, 1])
-            
-            plt.savefig('../images/{}_00{}.png'.format(video_name,i), dpi=200)
-            plt.clf()
-            #break
-        psnr_records.append(psnrs)
 
+            gt_frames.append(gt_frame)
+            pred_frames.append(pred_frame)
+            diff_frames.append(diff)
+        psnrs[0:num_his] = psnrs[num_his]
+        psnr_records.append(psnrs)
+        scores = calculate_score(psnrs)
+        visualize(frame = gt_frame, pred_frame = pred_frames, labels = gt, 
+                  scores = scores,
+                  num_vid = num_vid)
         break
+
+def calculate_score(psnrs):
+   scores = np.array([], dtype=np.float32) 
+   distance = psnrs
+   if (distance.max() - distance.min())!=0:
+      distance = (distance - distance.min()) / (distance.max() - distance.min())
+   else:
+      distance = (distance - 0) / (distance.max() - 0)
+   scores = np.concatenate((scores[:], distance[DECIDABLE_IDX:]), axis=0)
+   return scores
+
+def visualize(gt_frames, pred_frames, labels, scores, num_vid):
+   print(scores)
+   labels = gt[num_vid]
+   for i in range(len(frame)):
+      fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
+      plt.show()
+      ax2.imshow((pred_frames[i][0]+1)/2.0)
+      ax1.imshow((gt_frames[i] +1)/ 2.0)
+      img1 = gt_frames[i]
+      img2 = pred_frames[i][0]
+      error_r = np.fabs(np.subtract(img2[:,:,0], img1[:,:,0]))
+      error_g = np.fabs(np.subtract(img2[:,:,1], img1[:,:,1]))
+      error_b = np.fabs(np.subtract(img2[:,:,2], img1[:,:,2]))
+      lum_img = np.maximum(np.maximum(error_r, error_g), error_b)
+      # Uncomment the next line to turn the colors upside-down
+      #lum_img = np.negative(lum_img);
+      ax3.imshow(lum_img)
+
+      #compute scores
+      temp_psnrs = psnrs
+      #temp_psnrs[0:num_his] = temp_psnrs[num_his]
+      #frame_order[0:num_his] = frame_order[num_his]
+      distance = temp_psnrs
+      if (distance.max() - distance.min())!=0:
+         distance = (distance - distance.min()) / (distance.max() - distance.min())
+      else:
+         distance = (distance - 0) / (distance.max() - 0)
+         #scores = np.concatenate((scores, distance[DECIDABLE_IDX:]), axis=0)
+         #scores[i]=distance[DECIDABLE_IDX:]
+
+      ax4.plot(frame_order,scores, label="scores")
+      #ax4.plot(frame_order,distance, label="scores")
+      ax4.axis([0, length, 0, 1])
+
+      plt.savefig('../images/{}_{}.png'.format(video_name,'%04d'%(i)), dpi=200)
+      plt.clf()
+
