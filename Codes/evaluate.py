@@ -73,7 +73,7 @@ class GroundTruthLoader(object):
     A3D = 'A3D'
     UCF_CRIMES = 'ucf_crimes'
     AI_CITY = 'ai_city'
-    AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'train-anomaly-result.txt')
+    AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'train-anomaly-results.txt')
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
     TOY_DATA = 'toydata'
     TOY_DATA_LABEL_PATH = os.path.join(DATA_DIR, TOY_DATA, 'toydata.json')
@@ -141,7 +141,8 @@ class GroundTruthLoader(object):
             gt = self.__load_ucsd_avenue_subway_gt(dataset)
         return gt
 
-    def __load_ai_city():
+    def __load_ai_city(self):
+        frame_rate = 30
         anomaly_dict = {}
         with open(GroundTruthLoader.AI_CITY_LABEL_PATH, 'r') as file:
              for line in file:
@@ -152,20 +153,20 @@ class GroundTruthLoader(object):
                     anomaly_dict[video_id] = []
                  anomaly_dict[video_id].append(sub_anomaly)
 
-        dataset_video_folder = GroundTruthLoader.NAME_FRAMES_MAPPING[dataset]
+        dataset_video_folder = GroundTruthLoader.NAME_FRAMES_MAPPING[self.AI_CITY]
         video_list = os.listdir(dataset_video_folder)
         video_list.sort()
 
         assert len(anomaly_dict) == len(video_list), 'ground true does not match the number of testing videos. {} != {}' \
             .format(len(anomaly_dict), len(video_list))
         gt = []
-        length = 500 # each video has 500 frames
+        length = 1400 # each video has 500 frames
         for video in anomaly_dict:
             sub_video_gt = np.zeros((length,), dtype=np.int8)
             for anomaly in anomaly_dict[video]:
-                start = anomaly[0] -1
-                end = anomaly[1] -1 if anomaly[1] -1 < 500 else 499
-                if start < 500:
+                start = int(anomaly[0])*frame_rate - 1 - 599
+                end = int(anomaly[1])*frame_rate -1 - 599 if int(anomaly[1])*frame_rate -1 - 599 < length else length-1
+                if start < length:
                    sub_video_gt[start: end] = 1
             gt.append(sub_video_gt)
         return gt        
