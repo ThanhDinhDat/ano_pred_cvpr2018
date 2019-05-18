@@ -24,9 +24,13 @@ def calculate_score(psnrs):
    return scores
 
 def visualize(gt_frames, pred_frames, labels, scores, num_vid):
-   print(scores)
+   #print(scores)
    labels = gt[num_vid]
-   for i in range(len(frame)):
+   frame_order = []
+   length = len(gt_frames)
+   threshold = 0.5
+   for i in range(length):
+      frame_order.append(i)
       fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
       plt.show()
       ax2.imshow((pred_frames[i][0]+1)/2.0)
@@ -42,22 +46,15 @@ def visualize(gt_frames, pred_frames, labels, scores, num_vid):
       ax3.imshow(lum_img)
 
       #compute scores
-      temp_psnrs = psnrs
-      #temp_psnrs[0:num_his] = temp_psnrs[num_his]
-      #frame_order[0:num_his] = frame_order[num_his]
-      distance = temp_psnrs
-      if (distance.max() - distance.min())!=0:
-         distance = (distance - distance.min()) / (distance.max() - distance.min())
-      else:
-         distance = (distance - 0) / (distance.max() - 0)
-         #scores = np.concatenate((scores, distance[DECIDABLE_IDX:]), axis=0)
-         #scores[i]=distance[DECIDABLE_IDX:]
 
-      ax4.plot(frame_order,scores, label="scores")
-      #ax4.plot(frame_order,distance, label="scores")
+      ax4.plot(frame_order,scores[0: i+1], label="scores")
+      ax4.text(length - 350, 0.75, r'Ground_truth: {label}'.format(label='Normal' if labels[i] == 0 else 'Abnormal'),
+               {'color': 'r', 'fontsize': 15})
+      ax4.text(length - 350, 0.55, r'Predicted: {label}'.format(label='Normal' if scores[i] >= threshold else 'Abnormal'),
+               {'color': 'b', 'fontsize': 15})
       ax4.axis([0, length, 0, 1])
 
-      plt.savefig('../images/{}_{}.png'.format(video_name,'%04d'%(i)), dpi=200)
+      plt.savefig('../images/{}_{}/{}.png'.format(dataset_name,video_name,'%04d'%(i)), dpi=200)
       plt.clf()
 
 
@@ -123,8 +120,8 @@ with tf.Session(config=config) as sess:
     DECIDABLE_IDX = 4
     num_vid = -1
     for video_name, video in videos_info.items():
-        #video_name = '91.mp4'
-        #video = videos_info[video_name]
+        video_name = '95.mp4'
+        video = videos_info[video_name]
         num_vid = num_vid + 1
         length = video['length']
         total += length
@@ -133,7 +130,6 @@ with tf.Session(config=config) as sess:
         gt_frames = []
         pred_frames = []
         diff_frames = []
-        #psnrs = np.empty(shape=(length,), dtype=np.float32)
         psnrs = np.empty(shape=(length,), dtype=np.float32)
         labels = np.array([], dtype=np.int8)
         scores = np.array([], dtype=np.float32)
@@ -142,11 +138,10 @@ with tf.Session(config=config) as sess:
             psnr, pred_frame, diff = sess.run([test_psnr_error, test_outputs, diff_mask_tensor],
                                               feed_dict={test_video_clips_tensor: video_clip[np.newaxis, ...]})
             psnrs[i] = psnr
-            #psnrs = np.concatenate((psnrs,[psnr]), axis=0)
             frame_order = np.concatenate((frame_order, [i]),axis=0)
             
-            print('video = {} / {}, i = {} / {}'.format(
-                    video_name, num_videos, i, length,))
+            print('video = {} / {}, i = {} / {}, psnr = {:.6f}'.format(
+                    video_name, num_videos, i, length, psnr))
             gt_frame = video_clip[:,:,-3:]
 
             gt_frames.append(gt_frame)
@@ -155,7 +150,10 @@ with tf.Session(config=config) as sess:
         psnrs[0:num_his] = psnrs[num_his]
         psnr_records.append(psnrs)
         scores = calculate_score(psnrs)
-        visualize(frame = gt_frame, pred_frame = pred_frames, labels = gt, 
+        result_dir = '../images/{}_{}/'.format(dataset_name, video_name)
+        if not os.path.exists(result_dir):
+           os.makedirs(result_dir)
+        visualize(gt_frames= gt_frames, pred_frames = pred_frames, labels = gt, 
                   scores = scores,
                   num_vid = num_vid)
         break
