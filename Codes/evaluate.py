@@ -74,6 +74,8 @@ class GroundTruthLoader(object):
     UCF_CRIMES = 'ucf_crimes'
     AI_CITY = 'ai_city'
     AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'train-anomaly-results.txt')
+    AI_CITY_VIDEO_ORDER = {}
+    AI_CITY_VIDEO_START = 0
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
     TOY_DATA = 'toydata'
     TOY_DATA_LABEL_PATH = os.path.join(DATA_DIR, TOY_DATA, 'toydata.json')
@@ -160,12 +162,15 @@ class GroundTruthLoader(object):
         assert len(anomaly_dict) == len(video_list), 'ground true does not match the number of testing videos. {} != {}' \
             .format(len(anomaly_dict), len(video_list))
         gt = []
+        video_order = -1
         length = 1400 # each video has 500 frames
         for video in anomaly_dict:
+            video_order = video_order + 1
+            self.AI_CITY_VIDEO_ORDER[video] = video_order
             sub_video_gt = np.zeros((length,), dtype=np.int8)
             for anomaly in anomaly_dict[video]:
-                start = int(anomaly[0])*frame_rate - 1 - 599
-                end = int(anomaly[1])*frame_rate -1 - 599 if int(anomaly[1])*frame_rate -1 - 599 < length else length-1
+                start = int(anomaly[0])*frame_rate - 1 - self.AI_CITY_VIDEO_START
+                end = int(anomaly[1])*frame_rate -1 - self.AI_CITY_VIDEO_START if int(anomaly[1])*frame_rate -1 - self.AI_CITY_VIDEO_START < length else length-1
                 if start < length:
                    sub_video_gt[start: end] = 1
             gt.append(sub_video_gt)
