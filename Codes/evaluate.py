@@ -75,7 +75,7 @@ class GroundTruthLoader(object):
     AI_CITY = 'ai_city'
     AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'train-anomaly-results.txt')
     AI_CITY_VIDEO_ORDER = {}
-    AI_CITY_VIDEO_START = 0
+    AI_CITY_VIDEO_START = 1500
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
     TOY_DATA = 'toydata'
     TOY_DATA_LABEL_PATH = os.path.join(DATA_DIR, TOY_DATA, 'toydata.json')
@@ -150,6 +150,7 @@ class GroundTruthLoader(object):
              for line in file:
                  data = line.split()
                  video_id = data[0]
+                 
                  sub_anomaly = [data[1], data[2]]
                  if video_id not in anomaly_dict:
                     anomaly_dict[video_id] = []
@@ -163,10 +164,10 @@ class GroundTruthLoader(object):
             .format(len(anomaly_dict), len(video_list))
         gt = []
         video_order = -1
-        length = 1400 # each video has 500 frames
+        length = 1000 # each video has 500 frames
         for video in anomaly_dict:
             video_order = video_order + 1
-            self.AI_CITY_VIDEO_ORDER[video] = video_order
+            self.AI_CITY_VIDEO_ORDER[video+'.mp4'] = video_order
             sub_video_gt = np.zeros((length,), dtype=np.int8)
             for anomaly in anomaly_dict[video]:
                 start = int(anomaly[0])*frame_rate - 1 - self.AI_CITY_VIDEO_START
