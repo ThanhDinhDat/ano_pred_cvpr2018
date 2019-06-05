@@ -22,7 +22,7 @@ def parser_args():
                         help='the device id of gpu.')
     parser.add_argument('-i', '--iters', type=int, default=1,
                         help='set the number of iterations, default is 1')
-    parser.add_argument('-b', '--batch', type=int, default=4,
+    parser.add_argument('-b', '--batch', type=int, default=2,
                         help='set the batch size, default is 4.')
     parser.add_argument('--num_his', type=int, default=4,
                         help='set the time steps, default is 4.')
@@ -128,8 +128,8 @@ const.PER_STEP = args.per_step
 const.EVALUATE = args.evaluate
 
 # network constants
-const.HEIGHT = 256
-const.WIDTH = 256
+const.HEIGHT = 512
+const.WIDTH = 512
 const.FLOWNET_CHECKPOINT = 'checkpoints/pretrains/flownet-SD.ckpt-0'
 const.FLOW_HEIGHT = 384
 const.FLOW_WIDTH = 512

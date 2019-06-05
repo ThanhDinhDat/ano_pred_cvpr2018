@@ -19,7 +19,9 @@ def unet(inputs, layers, features_root=64, filter_size=3, pool_size=2, output_ch
         features = 2**layer*features_root
 
         conv1 = conv2d(inputs=in_node, num_outputs=features, kernel_size=filter_size)
+        print(conv1.get_shape())
         conv2 = conv2d(inputs=conv1, num_outputs=features, kernel_size=filter_size)
+        print(conv2.get_shape())
         conv.append(conv2)
 
         if layer < layers - 1:

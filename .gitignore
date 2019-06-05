@@ -1,4 +1,7 @@
 *.DS_Store*
+*.tar.gz
+*.pyc
+*.txt
 Codes/checkpoints/*
 Codes/show_pred_flow_results.ipynb
 ano_pred_2018_cvpr.pdf
