@@ -17,7 +17,7 @@ test_folder = const.TEST_FOLDER
 batch_size = const.BATCH_SIZE
 iterations = const.ITERATIONS
 num_his = const.NUM_HIS
-height, width = 400, 400
+height, width = 512, 512
 flow_height, flow_width = const.FLOW_HEIGHT, const.FLOW_WIDTH
 
 l_num = const.L_NUM

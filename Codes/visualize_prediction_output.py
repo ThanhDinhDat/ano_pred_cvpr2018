@@ -67,14 +67,14 @@ dataset_name = const.DATASET
 test_folder = const.TEST_FOLDER
 
 num_his = const.NUM_HIS
-height, width = 256, 256
+height, width = 512, 512
 
 snapshot_dir = const.SNAPSHOT_DIR
 psnr_dir = const.PSNR_DIR
 evaluate_name = const.EVALUATE
 scores = np.array([], dtype=np.float32)
 gt_loader = evaluate.GroundTruthLoader()
-gt_loader.AI_CITY_VIDEO_START = 20 * 30
+gt_loader.AI_CITY_VIDEO_START = 0 * 30
 gt = evaluate.get_gt(dataset=dataset_name)
 print(const)
 # define dataset
@@ -90,7 +90,7 @@ with tf.name_scope('dataset'):
 # in testing, only generator networks, there is no discriminator networks and flownet.
 with tf.variable_scope('generator', reuse=None):
     print('testing = {}'.format(tf.get_variable_scope().name))
-    test_outputs = generator(test_inputs, layers=4, output_channel=3)
+    test_outputs = generator(test_inputs, layers=5, output_channel=3)
     test_psnr_error = psnr_error(gen_frames=test_outputs, gt_frames=test_gt)
     diff_mask_tensor = diff_mask(test_outputs, test_gt)
 
@@ -118,7 +118,7 @@ with tf.Session(config=config) as sess:
     DECIDABLE_IDX = 4
     num_vid = -1
     for video_name, video in videos_info.items():
-        video_name = '72.mp4'
+        video_name = '63.mp4'
         video = videos_info[video_name]
         num_vid = num_vid + 1
         length = video['length']
@@ -170,7 +170,7 @@ with tf.Session(config=config) as sess:
    psnr_records = []
    DECIDABLE_IDX = 4
    num_vid = -1
-   video_name = '72.mp4'
+   video_name = '63.mp4'
    video = videos_info[video_name]
    num_vid = gt_loader.AI_CITY_VIDEO_ORDER[video_name]
    length = video['length']

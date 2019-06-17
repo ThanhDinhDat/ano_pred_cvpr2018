@@ -11,7 +11,7 @@ import glob
 
 # data folder contain all datasets, such as ped1, ped2, avenue, shanghaitech, etc
 # DATA_DIR = '/media/DATA/VAD_datasets'#'../Data'
-DATA_DIR = '/home/nktuan/thesis/future_frame/Data/'
+DATA_DIR = '/home/ddthanh/thesis/future_frame/Data/'
 # hostname = socket.gethostname()
 # if hostname == 'dl-T8520-G10':  # 119
 #     DATA_DIR = '/home/liuwen/ssd/datasets'
@@ -73,9 +73,9 @@ class GroundTruthLoader(object):
     A3D = 'A3D'
     UCF_CRIMES = 'ucf_crimes'
     AI_CITY = 'ai_city'
-    AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'train-anomaly-results-fix.txt')
+    AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'train-anomaly-results.txt')
     AI_CITY_VIDEO_ORDER = {}
-    AI_CITY_VIDEO_START = 2600
+    AI_CITY_VIDEO_START = 0
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
     TOY_DATA = 'toydata'
     TOY_DATA_LABEL_PATH = os.path.join(DATA_DIR, TOY_DATA, 'toydata.json')
