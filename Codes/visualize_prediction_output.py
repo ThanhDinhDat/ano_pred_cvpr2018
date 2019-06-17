@@ -31,7 +31,13 @@ def visualize(gt_frame, pred_frame, labels, scores, frame_order, num_vid):
    frame_index = frame_order[-1]
    length = len(scores)
    threshold = 0.5
-   fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
+   fig = plt.figure()
+#    fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
+   gs = fig.add_gridspec(2,3)
+   ax1 = fig.add_subplot(gs[0, 0])
+   ax2 = fig.add_subplot(gs[0, 1])
+   ax3 = fig.add_subplot(gs[0, 2])
+   ax4 = fig.add_subplot(gs[1, :])
    plt.show()
    ax2.imshow((pred_frame[0]+1)/2.0)
    ax1.imshow((gt_frame +1)/ 2.0)
@@ -140,7 +146,6 @@ with tf.Session(config=config) as sess:
             
             print('video = {} / {}, i = {} / {}, psnr = {:.6f}'.format(
                     video_name, num_videos, i, length, psnr))
-            gt_frame = video_clip[:,:,-3:]
         psnrs[0:num_his] = psnrs[num_his]
         psnr_records.append(psnrs)
         scores = calculate_score(psnrs)
@@ -148,49 +153,18 @@ with tf.Session(config=config) as sess:
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
         break
-
-
-with tf.Session(config=config) as sess:
-   # dataset
-   data_loader = DataLoader(test_folder, height, width)
-
-   # initialize weights
-   sess.run(tf.global_variables_initializer())
-   print('Init global successfully!')
-   
-   # tf saver
-   saver = tf.train.Saver(var_list=tf.global_variables(), max_to_keep=None)
-
-   restore_var = [v for v in tf.global_variables()]
-   loader = tf.train.Saver(var_list=restore_var)
-   load(loader, sess, snapshot_dir)
-   videos_info = data_loader.videos
-   num_videos = len(videos_info.keys())
-   total = 0
-   psnr_records = []
-   DECIDABLE_IDX = 4
-   num_vid = -1
-   video_name = '63.mp4'
-   video = videos_info[video_name]
-   num_vid = gt_loader.AI_CITY_VIDEO_ORDER[video_name]
-   length = video['length']
-   total += length
-   video_order = gt_loader.AI_CITY_VIDEO_ORDER[video_name]
-   frame_order = np.array([], dtype=np.int8)
-   psnrs = np.empty(shape=(length,), dtype=np.float32)
-   labels = np.array([], dtype=np.int8)
-   #scores = np.array([], dtype=np.float32)
-   for i in range(num_his, length):
-      video_clip = data_loader.get_video_clips(video_name, i - num_his, i + 1) # video clip size is (W,H,(4+1)*3)
-      psnr, pred_frame, diff = sess.run([test_psnr_error, test_outputs, diff_mask_tensor],
-                                        feed_dict={test_video_clips_tensor: video_clip[np.newaxis, ...]})
-      psnrs[i] = psnr
-      frame_order = np.concatenate((frame_order, [i]),axis=0)
-            
-      print('video = {} / {}, i = {} / {}, psnr = {:.6f}'.format(
-              video_name, num_videos, i, length, psnr))
-      gt_frame = video_clip[:,:,-3:]
-      visualize(gt_frame= gt_frame, pred_frame = pred_frame, labels = gt, 
-               scores = scores,
-               frame_order = frame_order,
-               num_vid = num_vid)
+        #visualize result
+        for i in range(num_his, length):
+            video_clip = data_loader.get_video_clips(video_name, i - num_his, i + 1) # video clip size is (W,H,(4+1)*3)
+            psnr, pred_frame, diff = sess.run([test_psnr_error, test_outputs, diff_mask_tensor],
+                                                feed_dict={test_video_clips_tensor: video_clip[np.newaxis, ...]})
+            psnrs[i] = psnr
+            frame_order = np.concatenate((frame_order, [i]),axis=0)
+                    
+            print('video = {} / {}, i = {} / {}, psnr = {:.6f}'.format(
+                    video_name, num_videos, i, length, psnr))
+            gt_frame = video_clip[:,:,-3:]
+            visualize(gt_frame= gt_frame, pred_frame = pred_frame, labels = gt, 
+                    scores = scores,
+                    frame_order = frame_order,
+                    num_vid = num_vid)
