@@ -33,11 +33,11 @@ def visualize(gt_frame, pred_frame, labels, scores, frame_order, num_vid):
    threshold = 0.5
    fig = plt.figure()
 #    fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
-   gs = fig.add_gridspec(2,3)
+   gs = fig.add_gridspec(ncols=3,nrows=2)
    ax1 = fig.add_subplot(gs[0, 0])
    ax2 = fig.add_subplot(gs[0, 1])
    ax3 = fig.add_subplot(gs[0, 2])
-   ax4 = fig.add_subplot(gs[1, :])
+   ax4 = fig.add_subplot(gs[-1, :])
    plt.show()
    ax2.imshow((pred_frame[0]+1)/2.0)
    ax1.imshow((gt_frame +1)/ 2.0)
@@ -80,7 +80,7 @@ psnr_dir = const.PSNR_DIR
 evaluate_name = const.EVALUATE
 scores = np.array([], dtype=np.float32)
 gt_loader = evaluate.GroundTruthLoader()
-gt_loader.AI_CITY_VIDEO_START = 0 * 30
+gt_loader.AI_CITY_VIDEO_START = 50 * 30
 gt = evaluate.get_gt(dataset=dataset_name)
 print(const)
 # define dataset
@@ -124,7 +124,7 @@ with tf.Session(config=config) as sess:
     DECIDABLE_IDX = 4
     num_vid = -1
     for video_name, video in videos_info.items():
-        video_name = '63.mp4'
+        video_name = '1.mp4'
         video = videos_info[video_name]
         num_vid = num_vid + 1
         length = video['length']
@@ -152,8 +152,9 @@ with tf.Session(config=config) as sess:
         result_dir = '../images/{}_{}/'.format(dataset_name, video_name)
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
-        break
+        frame_order = np.array([], dtype=np.int8) 
         #visualize result
+        print('save images')
         for i in range(num_his, length):
             video_clip = data_loader.get_video_clips(video_name, i - num_his, i + 1) # video clip size is (W,H,(4+1)*3)
             psnr, pred_frame, diff = sess.run([test_psnr_error, test_outputs, diff_mask_tensor],
@@ -168,3 +169,4 @@ with tf.Session(config=config) as sess:
                     scores = scores,
                     frame_order = frame_order,
                     num_vid = num_vid)
+        break
