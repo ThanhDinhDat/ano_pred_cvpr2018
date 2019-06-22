@@ -145,6 +145,7 @@ tf.summary.scalar(tensor=test_psnr_error, name='test_psnr_error')
 tf.summary.scalar(tensor=g_loss, name='g_loss')
 tf.summary.scalar(tensor=adv_loss, name='adv_loss')
 tf.summary.scalar(tensor=dis_loss, name='dis_loss')
+tf.summary.scalar(tensor=lp_loss, name='inten_loss')    
 tf.summary.image(tensor=train_outputs, name='train_outputs')
 tf.summary.image(tensor=train_gt, name='train_gt')
 tf.summary.image(tensor=test_outputs, name='test_outputs')
@@ -152,7 +153,7 @@ tf.summary.image(tensor=test_gt, name='test_gt')
 summary_op = tf.summary.merge_all()
 
 config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
+config.gpu_options.allow_growth = False
 with tf.Session(config=config) as sess:
     # summaries
     summary_writer = tf.summary.FileWriter(summary_dir, graph=sess.graph)

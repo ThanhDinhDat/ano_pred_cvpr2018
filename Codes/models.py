@@ -35,6 +35,7 @@ def srgan_generator(inputs, layers, features_root=64, filter_size=3, pool_size=2
         return net
 
     reuse = None
+    num_resblock = 8 #default is 16
     with tf.variable_scope('generator_unit', reuse=reuse):
         # The input layer
         with tf.variable_scope('input_stage'):
@@ -44,7 +45,7 @@ def srgan_generator(inputs, layers, features_root=64, filter_size=3, pool_size=2
         stage1_output = net
 
         # The residual block parts
-        for i in range(1, FLAGS.num_resblock+1 , 1):
+        for i in range(1, num_resblock+1 , 1):
             name_scope = 'resblock_%d'%(i)
             net = residual_block(net, 64, 1, name_scope)
 
