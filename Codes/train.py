@@ -3,7 +3,7 @@ import os
 
 from models import generator, discriminator, flownet, initialize_flownet
 from loss_functions import intensity_loss, gradient_loss
-from utils import DataLoader, load, save, psnr_error
+from utils import DataLoader, load, save, psnr_error, blend_images
 from constant import const
 
 
@@ -64,13 +64,17 @@ with tf.name_scope('dataset'):
 # define training generator function
 with tf.variable_scope('generator', reuse=None):
     print('training = {}'.format(tf.get_variable_scope().name))
-    train_outputs = generator(train_inputs, layers=5, output_channel=3)
+    input_images=blend_images(frames=train_inputs)
+    # train_outputs = generator(train_inputs, layers=5, output_channel=3)
+    train_outputs = generator(input_images, layers=5, output_channel=3)
     train_psnr_error = psnr_error(gen_frames=train_outputs, gt_frames=train_gt)
 
 # define testing generator function
 with tf.variable_scope('generator', reuse=True):
     print('testing = {}'.format(tf.get_variable_scope().name))
-    test_outputs = generator(test_inputs, layers=5, output_channel=3)
+    test_input_images=blend_images(frames=train_inputs)
+    test_outputs = generator(test_input_images, layers=5, output_channel=3)
+    # test_outputs = generator(test_inputs, layers=5, output_channel=3)
     test_psnr_error = psnr_error(gen_frames=test_outputs, gt_frames=test_gt)
 
 

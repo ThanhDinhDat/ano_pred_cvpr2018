@@ -153,6 +153,16 @@ def diff_mask(gen_frames, gt_frames, min_value=-1, max_value=1):
     diff = tf.abs(gen_gray_frames - gt_gray_frames)
     return diff
 
+def blend_images(frames):
+    alpha = 0.01 #modify this to get tail 
+    average = frames[0]
+    for i in range(1, len(frames)):
+        prev = frames[i]
+        # frame = reader.get_data(i)
+        
+        ## calculating average image
+        average = (1 - alpha)*average + alpha*frame
+    return average
 
 def load(saver, sess, ckpt_path):
     saver.restore(sess, ckpt_path)
