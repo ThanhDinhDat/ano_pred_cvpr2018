@@ -77,7 +77,7 @@ class DataLoader(object):
         # video clip paths
         dataset = tf.data.Dataset.from_generator(generator=video_clip_generator,
                                                  output_types=tf.float32,
-                                                 output_shapes=[resize_height, resize_width, clip_length * 3])
+                                                 output_shapes=[resize_height, resize_width, 2 * 3])
         print('generator dataset, {}'.format(dataset))
         dataset = dataset.prefetch(buffer_size=600)
         dataset = dataset.shuffle(buffer_size=600).batch(batch_size)
