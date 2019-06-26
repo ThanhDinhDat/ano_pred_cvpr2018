@@ -41,9 +41,9 @@ with tf.name_scope('dataset'):
 
     train_it = train_dataset.make_one_shot_iterator()
     train_videos_clips_tensor = train_it.get_next()
-    train_videos_clips_tensor.set_shape([batch_size, height, width, 3*(num_his + 1)])
+    train_videos_clips_tensor.set_shape([batch_size, height, width, 3*(1 + 1)])
 
-    train_inputs = train_videos_clips_tensor[..., 0:num_his*3]
+    train_inputs = train_videos_clips_tensor[..., 0:1*3]
     train_gt = train_videos_clips_tensor[..., -3:]
 
     print('train inputs = {}'.format(train_inputs))
@@ -53,9 +53,9 @@ with tf.name_scope('dataset'):
     test_dataset = test_loader(batch_size=batch_size, time_steps=num_his, num_pred=1)
     test_it = test_dataset.make_one_shot_iterator()
     test_videos_clips_tensor = test_it.get_next()
-    test_videos_clips_tensor.set_shape([batch_size, height, width, 3*(num_his + 1)])
+    test_videos_clips_tensor.set_shape([batch_size, height, width, 3*(1 + 1)])
 
-    test_inputs = test_videos_clips_tensor[..., 0:num_his*3]
+    test_inputs = test_videos_clips_tensor[..., 0:1*3]
     test_gt = test_videos_clips_tensor[..., -3:]
 
     print('test inputs = {}'.format(test_inputs))
@@ -64,17 +64,17 @@ with tf.name_scope('dataset'):
 # define training generator function
 with tf.variable_scope('generator', reuse=None):
     print('training = {}'.format(tf.get_variable_scope().name))
-    input_images=blend_images(frames=train_inputs)
-    # train_outputs = generator(train_inputs, layers=5, output_channel=3)
-    train_outputs = generator(input_images, layers=5, output_channel=3)
+    # input_images=blend_images(frames=train_inputs)
+    # train_outputs = generator(input_images, layers=5, output_channel=3)
+    train_outputs = generator(train_inputs, layers=5, output_channel=3)
     train_psnr_error = psnr_error(gen_frames=train_outputs, gt_frames=train_gt)
 
 # define testing generator function
 with tf.variable_scope('generator', reuse=True):
     print('testing = {}'.format(tf.get_variable_scope().name))
-    test_input_images=blend_images(frames=train_inputs)
-    test_outputs = generator(test_input_images, layers=5, output_channel=3)
-    # test_outputs = generator(test_inputs, layers=5, output_channel=3)
+    # test_input_images=blend_images(frames=train_inputs)
+    # test_outputs = generator(test_input_images, layers=5, output_channel=3)
+    test_outputs = generator(test_inputs, layers=5, output_channel=3)
     test_psnr_error = psnr_error(gen_frames=test_outputs, gt_frames=test_gt)
 
 

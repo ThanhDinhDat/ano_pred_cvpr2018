@@ -26,6 +26,15 @@ def np_load_frame(filename, resize_height, resize_width):
     return image_resized
 
 
+def blend_images(frames):
+    alpha = 0.3 #modify this to get tail 
+    average = frames[0]
+    for i in range(1, len(frames)):
+        prev = frames[i]        
+        ## calculating average image
+        average = (1 - alpha)*average + alpha*prev
+    return average
+
 class DataLoader(object):
     def __init__(self, video_folder, resize_height=256, resize_width=256, phase='train'):
         self.dir = video_folder
@@ -55,8 +64,12 @@ class DataLoader(object):
                     print(clip_length)
                     raise ValueError()
                 video_clip = []
+                frames = []
                 for frame_id in range(start, start + clip_length):
-                    video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
+                    # video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
+                    frames.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
+                average_image = blend_images(frames)
+                video_clip.append[average_image]
                 video_clip = np.concatenate(video_clip, axis=2)
 
                 yield video_clip
@@ -97,9 +110,14 @@ class DataLoader(object):
         # assert end <= self.videos[video]['length'], 'end = {} must <= {}'.format(video, self.videos[video]['length'])
 
         batch = []
-        for i in range(start, end):
+        frames = []
+        for i in range(start, end-1):
             image = np_load_frame(self.videos[video]['frame'][i], self._resize_height, self._resize_width)
-            batch.append(image)
+            frames.append(image)
+        average_frame = blend_images(frames)
+        batch.append(average_frame)
+        next_gt_image = np_load_frame(self.videos[video]['frame'][end-1], self._resize_height, self._resize_width)
+        batch.append(next_gt_image)
 
         return np.concatenate(batch, axis=2)
 
@@ -152,17 +170,6 @@ def diff_mask(gen_frames, gt_frames, min_value=-1, max_value=1):
 
     diff = tf.abs(gen_gray_frames - gt_gray_frames)
     return diff
-
-def blend_images(frames):
-    alpha = 0.01 #modify this to get tail 
-    average = frames[0]
-    for i in range(1, len(frames)):
-        prev = frames[i]
-        # frame = reader.get_data(i)
-        
-        ## calculating average image
-        average = (1 - alpha)*average + alpha*frame
-    return average
 
 def load(saver, sess, ckpt_path):
     saver.restore(sess, ckpt_path)

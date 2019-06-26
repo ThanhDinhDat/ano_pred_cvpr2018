@@ -32,7 +32,6 @@ def visualize(gt_frame, pred_frame, labels, scores, frame_order, num_vid):
    length = len(scores)
    threshold = 0.5
    fig = plt.figure()
-#    fig, (ax1, ax2, ax3, ax4) = plt.subplots(figsize=(16, 8), nrows=4, ncols=1)
    gs = fig.add_gridspec(ncols=3,nrows=2)
    ax1 = fig.add_subplot(gs[0, 0])
    ax2 = fig.add_subplot(gs[0, 1])
@@ -85,9 +84,9 @@ gt = evaluate.get_gt(dataset=dataset_name)
 print(const)
 # define dataset
 with tf.name_scope('dataset'):
-    test_video_clips_tensor = tf.placeholder(shape=[1, height, width, 3 * (num_his + 1)],
+    test_video_clips_tensor = tf.placeholder(shape=[1, height, width, 3 * (1 + 1)],
                                              dtype=tf.float32)
-    test_inputs = test_video_clips_tensor[..., 0:num_his*3]
+    test_inputs = test_video_clips_tensor[..., 0:1*3]
     test_gt = test_video_clips_tensor[..., -3:]
     print('test inputs = {}'.format(test_inputs))
     print('test prediction gt = {}'.format(test_gt))
