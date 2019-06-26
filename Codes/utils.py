@@ -65,11 +65,13 @@ class DataLoader(object):
                     raise ValueError()
                 video_clip = []
                 frames = []
-                for frame_id in range(start, start + clip_length):
+                for frame_id in range(start, start + clip_length - 1):
                     # video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                     frames.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                 average_image = blend_images(frames)
                 video_clip.append[average_image]
+                # add next gt image
+                video_clip.append(np_load_frame(video_info['frame'][start + clip_length - 1], resize_height, resize_width))
                 video_clip = np.concatenate(video_clip, axis=2)
 
                 yield video_clip
