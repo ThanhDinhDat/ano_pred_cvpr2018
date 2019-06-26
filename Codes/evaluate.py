@@ -73,7 +73,7 @@ class GroundTruthLoader(object):
     A3D = 'A3D'
     UCF_CRIMES = 'ucf_crimes'
     AI_CITY = 'ai_city'
-    AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'train-anomaly-results.txt')
+    AI_CITY_LABEL_PATH = os.path.join(DATA_DIR, AI_CITY, 'test_anomaly.txt')
     AI_CITY_VIDEO_ORDER = {}
     AI_CITY_VIDEO_START = 0
     SHANGHAITECH_LABEL_PATH = os.path.join(DATA_DIR, 'shanghaitech/testing/test_frame_mask')
