@@ -160,7 +160,7 @@ tf.summary.image(tensor=test_diff_mask_tensor, name='test_diff')
 summary_op = tf.summary.merge_all()
 
 config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
+config.gpu_options.allow_growth = False
 with tf.Session(config=config) as sess:
     # summaries
     summary_writer = tf.summary.FileWriter(summary_dir, graph=sess.graph)

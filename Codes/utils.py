@@ -65,19 +65,20 @@ class DataLoader(object):
                     raise ValueError()
                 video_clip = []
                 first_batch_frames = []
-                for frame_id in range(start, (start + clip_length)/2):
+                
+                for frame_id in range(start, start + clip_length//2):
                     # video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                     first_batch_frames.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                 average_image = blend_images(first_batch_frames)
-                video_clip.append[average_image]
+                video_clip.append(average_image)
                 # add next gt image
                 second_batch_frames = []
-                for frame_id in range((start + clip_length)/2, start + clip_length):
+                for frame_id in range(start + clip_length//2, start + clip_length):
                     # video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                     second_batch_frames.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                 # video_clip.append(np_load_frame(video_info['frame'][start + clip_length - 1], resize_height, resize_width))
                 average_image = blend_images(second_batch_frames)
-                video_clip.append[average_image]
+                video_clip.append(average_image)
                 video_clip = np.concatenate(video_clip, axis=2)
 
                 yield video_clip
