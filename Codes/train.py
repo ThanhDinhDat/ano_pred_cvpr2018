@@ -3,7 +3,7 @@ import os
 
 from models import generator, discriminator, flownet, initialize_flownet
 from loss_functions import intensity_loss, gradient_loss
-from utils import DataLoader, load, save, psnr_error, blend_images
+from utils import DataLoader, load, save, psnr_error, blend_images, diff_mask
 from constant import const
 
 
