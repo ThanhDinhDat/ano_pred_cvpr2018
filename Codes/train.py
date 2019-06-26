@@ -16,7 +16,7 @@ test_folder = const.TEST_FOLDER
 
 batch_size = const.BATCH_SIZE
 iterations = const.ITERATIONS
-num_his = const.NUM_HIS
+num_his = const.NUM_HIS # should be an odd number
 height, width = 512, 512
 flow_height, flow_width = const.FLOW_HEIGHT, const.FLOW_WIDTH
 
@@ -68,6 +68,7 @@ with tf.variable_scope('generator', reuse=None):
     # train_outputs = generator(input_images, layers=5, output_channel=3)
     train_outputs = generator(train_inputs, layers=5, output_channel=3)
     train_psnr_error = psnr_error(gen_frames=train_outputs, gt_frames=train_gt)
+    train_diff_mask_tensor = diff_mask(train_outputs, train_gt)
 
 # define testing generator function
 with tf.variable_scope('generator', reuse=True):
@@ -76,6 +77,7 @@ with tf.variable_scope('generator', reuse=True):
     # test_outputs = generator(test_input_images, layers=5, output_channel=3)
     test_outputs = generator(test_inputs, layers=5, output_channel=3)
     test_psnr_error = psnr_error(gen_frames=test_outputs, gt_frames=test_gt)
+    test_diff_mask_tensor = diff_mask(test_outputs, test_gt)
 
 
 # define intensity loss
@@ -151,8 +153,10 @@ tf.summary.scalar(tensor=adv_loss, name='adv_loss')
 tf.summary.scalar(tensor=dis_loss, name='dis_loss')
 tf.summary.image(tensor=train_outputs, name='train_outputs')
 tf.summary.image(tensor=train_gt, name='train_gt')
+tf.summary.image(tensor=train_diff_mask_tensor, name='train_diff')
 tf.summary.image(tensor=test_outputs, name='test_outputs')
 tf.summary.image(tensor=test_gt, name='test_gt')
+tf.summary.image(tensor=test_diff_mask_tensor, name='test_diff')
 summary_op = tf.summary.merge_all()
 
 config = tf.ConfigProto()
