@@ -69,14 +69,14 @@ class DataLoader(object):
                     # video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                     first_frames.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                 average_image = blend_images(first_frames)
-                video_clip.append[average_image]
+                video_clip.append(average_image)
                 # add next gt image
                 second_frames = []
                 for frame_id in range(star+1, start + clip_length):
                     # video_clip.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                     second_frames.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                 average_image = blend_images(second_frames)
-                video_clip.append[average_image]
+                video_clip.append(average_image)
                 # video_clip.append(np_load_frame(video_info['frame'][start + clip_length - 1], resize_height, resize_width))
                 video_clip = np.concatenate(video_clip, axis=2)
 
