@@ -23,7 +23,7 @@ def calculate_score(psnrs):
    scores = np.concatenate((scores[:], distance[DECIDABLE_IDX:]), axis=0)
    return scores
 
-def visualize(gt_frame, pred_frame, labels, scores, frame_order, num_vid):
+def visualize(gt_frame, pred_frame, labels, scores, frame_order, num_vid, diff):
    #print(scores)
    #print(labels)
    #print(frame_order)
@@ -48,8 +48,8 @@ def visualize(gt_frame, pred_frame, labels, scores, frame_order, num_vid):
    lum_img = np.maximum(np.maximum(error_r, error_g), error_b)
    # Uncomment the next line to turn the colors upside-down
    #lum_img = np.negative(lum_img);
-   ax3.imshow(lum_img)
-
+   #ax3.imshow(lum_img)
+   ax3.imshow((diff+1)/2.0)
    #compute scores
 
    ax4.plot(frame_order, scores[0: len(frame_order)], label="scores")
@@ -123,7 +123,7 @@ with tf.Session(config=config) as sess:
     DECIDABLE_IDX = 4
     num_vid = -1
     for video_name, video in videos_info.items():
-        video_name = '1.mp4'
+        video_name = '64.mp4'
         video = videos_info[video_name]
         num_vid = num_vid + 1
         length = video['length']
@@ -167,5 +167,6 @@ with tf.Session(config=config) as sess:
             visualize(gt_frame= gt_frame, pred_frame = pred_frame, labels = gt, 
                     scores = scores,
                     frame_order = frame_order,
-                    num_vid = num_vid)
+                    num_vid = num_vid,
+                    diff = diff[0])
         break

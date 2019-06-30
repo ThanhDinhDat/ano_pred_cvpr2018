@@ -120,12 +120,17 @@ class DataLoader(object):
 
         batch = []
         frames = []
-        for i in range(start, end-1):
+        for i in range(start, end-6):
             image = np_load_frame(self.videos[video]['frame'][i], self._resize_height, self._resize_width)
             frames.append(image)
         average_frame = blend_images(frames)
         batch.append(average_frame)
-        next_gt_image = np_load_frame(self.videos[video]['frame'][end-1], self._resize_height, self._resize_width)
+        #next_gt_image = np_load_frame(self.videos[video]['frame'][end-1], self._resize_height, self._resize_width)
+        second_batch_frames = []
+        for i in range(end-6, end):
+            image = np_load_frame(self.videos[video]['frame'][i], self._resize_height, self._resize_width)
+            second_batch_frames.append(image)
+        next_gt_image = blend_images(second_batch_frames)
         batch.append(next_gt_image)
 
         return np.concatenate(batch, axis=2)

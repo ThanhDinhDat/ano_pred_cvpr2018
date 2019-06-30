@@ -149,6 +149,7 @@ class GroundTruthLoader(object):
         with open(GroundTruthLoader.AI_CITY_LABEL_PATH, 'r') as file:
              for line in file:
                  data = line.split()
+                 print(data)
                  video_id = data[0]
                  
                  sub_anomaly = [data[1], data[2]]
