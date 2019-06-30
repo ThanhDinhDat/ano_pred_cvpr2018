@@ -49,7 +49,7 @@ def visualize(gt_frame, pred_frame, labels, scores, frame_order, num_vid, diff):
    # Uncomment the next line to turn the colors upside-down
    #lum_img = np.negative(lum_img);
    #ax3.imshow(lum_img)
-   ax3.imshow((diff+1)/2.0)
+   ax3.imshow(diff.squeeze())
    #compute scores
 
    ax4.plot(frame_order, scores[0: len(frame_order)], label="scores")
