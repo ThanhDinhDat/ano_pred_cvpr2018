@@ -70,6 +70,7 @@ class DataLoader(object):
                     frames.append(np_load_frame(video_info['frame'][frame_id], resize_height, resize_width))
                 average_image = blend_images(frames)
                 video_clip.append(average_image)
+                video_clip.append(np_load_frame(video_info['frame'][start + clip_length - 2], resize_height, resize_width))
                 # add next gt image
                 video_clip.append(np_load_frame(video_info['frame'][start + clip_length - 1], resize_height, resize_width))
                 video_clip = np.concatenate(video_clip, axis=2)
@@ -79,7 +80,7 @@ class DataLoader(object):
         # video clip paths
         dataset = tf.data.Dataset.from_generator(generator=video_clip_generator,
                                                  output_types=tf.float32,
-                                                 output_shapes=[resize_height, resize_width, 2 * 3])
+                                                 output_shapes=[resize_height, resize_width, 3 * 3])
         print('generator dataset, {}'.format(dataset))
         dataset = dataset.prefetch(buffer_size=600)
         dataset = dataset.shuffle(buffer_size=600).batch(batch_size)
