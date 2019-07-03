@@ -123,7 +123,7 @@ with tf.Session(config=config) as sess:
     DECIDABLE_IDX = 4
     num_vid = -1
     for video_name, video in videos_info.items():
-        video_name = '1.mp4'
+        #video_name = '1.mp4'
         video = videos_info[video_name]
         num_vid = num_vid + 1
         length = video['length']
@@ -168,4 +168,4 @@ with tf.Session(config=config) as sess:
                     scores = scores,
                     frame_order = frame_order,
                     num_vid = num_vid)
-        break
+        #break
