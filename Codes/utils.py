@@ -27,7 +27,7 @@ def np_load_frame(filename, resize_height, resize_width):
 
 
 def blend_images(frames):
-    alpha = 0.3 #modify this to get tail 
+    alpha = 0.2 #modify this to get tail 
     average = frames[0]
     for i in range(1, len(frames)):
         prev = frames[i]        
