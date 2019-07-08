@@ -2,8 +2,8 @@ import tensorflow as tf
 import os
 
 from models import generator, discriminator, flownet, initialize_flownet
-from loss_functions import intensity_loss, gradient_loss
-from utils import DataLoader, load, save, psnr_error
+from loss_functions import intensity_loss, gradient_loss, focus_loss
+from utils import DataLoader, load, save, psnr_error, blend_images, diff_mask
 from constant import const
 
 
@@ -66,12 +66,14 @@ with tf.variable_scope('generator', reuse=None):
     print('training = {}'.format(tf.get_variable_scope().name))
     train_outputs = generator(train_inputs, layers=5, output_channel=3)
     train_psnr_error = psnr_error(gen_frames=train_outputs, gt_frames=train_gt)
+    train_diff_mask_tensor = diff_mask(train_outputs, train_gt)
 
 # define testing generator function
 with tf.variable_scope('generator', reuse=True):
     print('testing = {}'.format(tf.get_variable_scope().name))
     test_outputs = generator(test_inputs, layers=5, output_channel=3)
     test_psnr_error = psnr_error(gen_frames=test_outputs, gt_frames=test_gt)
+    test_diff_mask_tensor = diff_mask(test_outputs, test_gt)
 
 
 # define intensity loss
@@ -79,6 +81,13 @@ if lam_lp != 0:
     lp_loss = intensity_loss(gen_frames=train_outputs, gt_frames=train_gt, l_num=l_num)
 else:
     lp_loss = tf.constant(0.0, dtype=tf.float32)
+
+# define focus loss
+if lam_lp != 0:
+    fo_loss = focus_loss(gen_frames=train_outputs, gt_frames=train_gt, l_num=l_num)
+else:
+    fo_loss = tf.constant(0.0, dtype=tf.float32)
+
 
 
 # define gdl loss
@@ -117,7 +126,7 @@ else:
 
 
 with tf.name_scope('training'):
-    g_loss = tf.add_n([lp_loss * lam_lp, gdl_loss * lam_gdl, adv_loss * lam_adv, flow_loss * lam_flow], name='g_loss')
+    g_loss = tf.add_n([lp_loss * lam_lp, gdl_loss * lam_gdl, adv_loss * lam_adv, flow_loss * lam_flow, fo_loss], name='g_loss')
 
     g_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='g_step')
     g_lrate = tf.train.piecewise_constant(g_step, boundaries=const.LRATE_G_BOUNDARIES, values=const.LRATE_G)
@@ -145,14 +154,19 @@ tf.summary.scalar(tensor=test_psnr_error, name='test_psnr_error')
 tf.summary.scalar(tensor=g_loss, name='g_loss')
 tf.summary.scalar(tensor=adv_loss, name='adv_loss')
 tf.summary.scalar(tensor=dis_loss, name='dis_loss')
+tf.summary.scalar(tensor=flow_loss, name='train_flow_loss')
+tf.summary.scalar(tensor=lp_loss, name='intensity_loss')
+tf.summary.scalar(tensor=fo_loss, name='focus_loss')
 tf.summary.image(tensor=train_outputs, name='train_outputs')
 tf.summary.image(tensor=train_gt, name='train_gt')
+tf.summary.image(tensor=train_diff_mask_tensor, name='train_diff')
 tf.summary.image(tensor=test_outputs, name='test_outputs')
 tf.summary.image(tensor=test_gt, name='test_gt')
+tf.summary.image(tensor=test_diff_mask_tensor, name='test_diff')
 summary_op = tf.summary.merge_all()
 
 config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
+config.gpu_options.allow_growth = False
 with tf.Session(config=config) as sess:
     # summaries
     summary_writer = tf.summary.FileWriter(summary_dir, graph=sess.graph)
@@ -190,8 +204,8 @@ with tf.Session(config=config) as sess:
                 _dis_loss = 0
 
             print('Training generator...')
-            _, _g_lr, _step, _lp_loss, _gdl_loss, _adv_loss, _flow_loss, _g_loss, _train_psnr, _summaries = sess.run(
-                [g_train_op, g_lrate, g_step, lp_loss, gdl_loss, adv_loss, flow_loss, g_loss, train_psnr_error, summary_op])
+            _, _g_lr, _step, _lp_loss, _fo_loss, _gdl_loss, _adv_loss, _flow_loss, _g_loss, _train_psnr, _summaries = sess.run(
+                [g_train_op, g_lrate, g_step, lp_loss, fo_loss, gdl_loss, adv_loss, flow_loss, g_loss, train_psnr_error, summary_op])
 
             if _step % 10 == 0:
                 print('DiscriminatorModel: Step {} | Global Loss: {:.6f}, lr = {:.6f}'.format(_d_step, _dis_loss, _d_lr))

@@ -19,6 +19,26 @@ def intensity_loss(gen_frames, gt_frames, l_num):
     """
     return tf.reduce_mean(tf.abs((gen_frames - gt_frames) ** l_num))
 
+def focus_loss(gen_frames, gt_frames, l_num):
+    """
+    Calculates the sum of lp losses between the predicted and ground truth frames.
+
+    @param gen_frames: The predicted frames at each scale.
+    @param gt_frames: The ground truth frames at each scale
+    @param l_num: 1 or 2 for l1 and l2 loss, respectively).
+
+    @return: The focus loss.
+    """
+    alpha = 0.25
+    gamma = 2
+    prediction_tensor = tf.abs((gen_frames - gt_frames) ** l_num)
+    sigmoid_p = tf.nn.sigmoid(prediction_tensor)
+    zeros = array_ops.zeros_like(sigmoid_p, dtype=sigmoid_p.dtype)
+    target_tensor = array_ops.zeros_like(prediction_tensor, dtype=prediction_tensor.dtype)
+    pos_p_sub = array_ops.where(prediction_tensor > zeros, prediction_tensor - sigmoid_p, zeros)
+    neg_p_sub = array_ops.where(target_tensor > zeros, zeros, sigmoid_p)
+    per_entry_cross_ent = - alpha * (pos_p_sub ** gamma) * tf.log(tf.clip_by_value(sigmoid_p, 1e-8, 1.0)) - (1 - alpha) * (neg_p_sub ** gamma) * tf.log(tf.clip_by_value(1.0 - sigmoid_p, 1e-8, 1.0))
+    return tf.reduce_sum(per_entry_cross_ent)
 
 def gradient_loss(gen_frames, gt_frames, alpha):
     """
