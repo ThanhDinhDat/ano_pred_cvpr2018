@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-
+from tensorflow.python.ops import array_ops
 
 def flow_loss(gen_flows, gt_flows):
     print(gen_flows['flow'])
@@ -35,7 +35,7 @@ def focus_loss(gen_frames, gt_frames, l_num):
     sigmoid_p = tf.nn.sigmoid(prediction_tensor)
     zeros = array_ops.zeros_like(sigmoid_p, dtype=sigmoid_p.dtype)
     target_tensor = array_ops.zeros_like(prediction_tensor, dtype=prediction_tensor.dtype)
-    pos_p_sub = array_ops.where(prediction_tensor > zeros, prediction_tensor - sigmoid_p, zeros)
+    pos_p_sub = array_ops.where(target_tensor > zeros, target_tensor - sigmoid_p, zeros)
     neg_p_sub = array_ops.where(target_tensor > zeros, zeros, sigmoid_p)
     per_entry_cross_ent = - alpha * (pos_p_sub ** gamma) * tf.log(tf.clip_by_value(sigmoid_p, 1e-8, 1.0)) - (1 - alpha) * (neg_p_sub ** gamma) * tf.log(tf.clip_by_value(1.0 - sigmoid_p, 1e-8, 1.0))
     return tf.reduce_sum(per_entry_cross_ent)

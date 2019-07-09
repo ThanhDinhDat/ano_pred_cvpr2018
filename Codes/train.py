@@ -3,7 +3,7 @@ import os
 
 from models import generator, discriminator, flownet, initialize_flownet
 from loss_functions import intensity_loss, gradient_loss, focus_loss
-from utils import DataLoader, load, save, psnr_error, blend_images, diff_mask
+from utils import DataLoader, load, save, psnr_error, diff_mask
 from constant import const
 
 
@@ -220,7 +220,7 @@ with tf.Session(config=config) as sess:
                 summary_writer.add_summary(_summaries, global_step=_step)
                 print('Save summaries...')
 
-            if _step % 1000 == 0:
+            if _step % 5000 == 0:
                 save(saver, sess, snapshot_dir, _step)
 
         except tf.errors.OutOfRangeError:
